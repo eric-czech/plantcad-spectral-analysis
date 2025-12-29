@@ -1,0 +1,22 @@
+Run started: 2025-12-27T13:09:54.767392
+Arguments: Namespace(source='plantcad_rand', n_samples=[128, 256, 512, 1024, 4096, 16384, 65536, 262144], seq_len=4096, pooling_method='mean', model_path=None, model_subfolder=None, seed=42, batch_size=32, device='cuda', output_dir='eigenspectrum_results_v12', force=False, species_filter=None, split='train')
+
+============================================================
+Eigenspectrum Analysis of DNA Sequences
+============================================================
+Parameters:
+  - Source: plantcad_rand
+  - Sample sizes: [128, 256, 512, 1024, 4096, 16384, 65536, 262144]
+  - Sequence length: 4096 bp
+  - Feature dimension: d_model (model hidden size)
+  - Pooling method: mean
+  - Random initialization: True
+
+Loading dataset from HuggingFace (split=train)...
+Resolving data files:   0%|          | 0/45 [00:00<?, ?it/s]Resolving data files: 100%|##########| 45/45 [00:00<00:00, 556.21it/s]
+Loading dataset shards:   0%|          | 0/44 [00:00<?, ?it/s]Loading dataset shards: 100%|##########| 44/44 [00:00<00:00, 7535.70it/s]
+Dataset size: 2,638,656 records
+Sampling 262144 records...
+Extracting records...
+  Unique species: 65
+Loading AutoModelForMaskedLM from kuleshov-group/PlantCAD2-Small-l24-d0768 (random init) with dtype=torch.bfloat16...
