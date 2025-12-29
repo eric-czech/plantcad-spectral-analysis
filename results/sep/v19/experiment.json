@@ -1,0 +1,33 @@
+{
+  "version": "v19",
+  "title": "Marin IsoFLOP small width, lowest FLOP budget",
+  "description": "IsoFLOP tiny model with smallest compute budget (2.0e15) and small width (805K params)",
+  "experiment_group": "marin_isoflop_small_width",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 4096,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
+  "analysis__max_sample_size": 262144,
+  "analysis__max_rank": 112,
+
+  "model__name": "plantcad_isoflop_v1.5-A_qwen-F2.0e+15-P805.3K-T207M",
+  "model__type": "CLM",
+  "model__source": "marin",
+  "model__training_status": "trained",
+  "model__flop_budget": 2.0e15,
+  "model__width_class": "small",
+  "model__simulation_mode": "none",
+
+  "data__modality": "dna",
+  "data__kingdom": "plants",
+  "data__dataset": "plantcad",
+  "data__split": "train",
+  "data__species_filter": "all",
+  "data__species_filter_value": null,
+
+  "reference__github_issue": "https://github.com/marin-community/marin/issues/2101",
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints"
+}
+

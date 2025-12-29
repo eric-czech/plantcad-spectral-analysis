@@ -1,0 +1,33 @@
+{
+  "version": "v16",
+  "title": "Marin PoC 600M model at 512bp",
+  "description": "Proof-of-concept Marin model from early training experiments",
+  "experiment_group": "marin_poc",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 512,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
+  "analysis__max_sample_size": 262144,
+  "analysis__max_rank": 1408,
+
+  "model__name": "plantcad-train-600m-r16",
+  "model__type": "CLM",
+  "model__source": "marin",
+  "model__training_status": "trained",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": "none",
+
+  "data__modality": "dna",
+  "data__kingdom": "plants",
+  "data__dataset": "plantcad",
+  "data__split": "train",
+  "data__species_filter": "all",
+  "data__species_filter_value": null,
+
+  "reference__github_issue": "https://github.com/marin-community/marin/issues/1729",
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "plantcad/marin_exp1729__pcv1_600m_c512__checkpoints"
+}
+

@@ -1,0 +1,33 @@
+{
+  "version": "v26",
+  "title": "Marin Qwen random init baseline",
+  "description": "Randomly initialized Qwen model without any training as baseline comparison",
+  "experiment_group": "marin_simulation",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 4096,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
+  "analysis__max_sample_size": 262144,
+  "analysis__max_rank": 384,
+
+  "model__name": "plantcad_pretrain_fp32_no_train_v0.3",
+  "model__type": "CLM",
+  "model__source": "marin",
+  "model__training_status": "random_init",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": null,
+
+  "data__modality": "dna",
+  "data__kingdom": "plants",
+  "data__dataset": "plantcad",
+  "data__split": "train",
+  "data__species_filter": "all",
+  "data__species_filter_value": null,
+
+  "reference__github_issue": null,
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints"
+}
+

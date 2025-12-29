@@ -1,0 +1,33 @@
+{
+  "version": "v24",
+  "title": "Marin Qwen pretrain with k-mer shuffle simulation",
+  "description": "Qwen pretrained on sequences with k-mer (k=3) shuffling to break long-range dependencies",
+  "experiment_group": "marin_simulation",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 4096,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
+  "analysis__max_sample_size": 262144,
+  "analysis__max_rank": 384,
+
+  "model__name": "plantcad_pretrain_fp32_sim_k3_v0.3",
+  "model__type": "CLM",
+  "model__source": "marin",
+  "model__training_status": "trained",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": "low_homology",
+
+  "data__modality": "dna",
+  "data__kingdom": "plants",
+  "data__dataset": "plantcad",
+  "data__split": "train",
+  "data__species_filter": "all",
+  "data__species_filter_value": null,
+
+  "reference__github_issue": null,
+  "reference__wandb_run": "https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/daqyb5zp",
+  "reference__model_hub_path": "plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints"
+}
+

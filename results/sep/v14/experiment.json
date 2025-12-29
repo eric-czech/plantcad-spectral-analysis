@@ -1,0 +1,33 @@
+{
+  "version": "v14",
+  "title": "PlantCAD2-Small random init at 8192bp",
+  "description": "Randomly initialized PlantCAD2-Small at full context length as baseline comparison",
+  "experiment_group": "plantcad2_baseline",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 8192,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [128, 256, 512, 1024, 4096, 16384, 65536, 262144],
+  "analysis__max_sample_size": 262144,
+  "analysis__max_rank": 768,
+
+  "model__name": "PlantCAD2-Small",
+  "model__type": "MLM",
+  "model__source": "plantcad",
+  "model__training_status": "random_init",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": null,
+
+  "data__modality": "dna",
+  "data__kingdom": "plants",
+  "data__dataset": "plantcad",
+  "data__split": "train",
+  "data__species_filter": "all",
+  "data__species_filter_value": null,
+
+  "reference__github_issue": null,
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "kuleshov-group/PlantCAD2-Small-l24-d0768"
+}
+
