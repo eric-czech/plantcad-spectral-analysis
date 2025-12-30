@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import warnings
 from pathlib import Path
 
 import pandas as pd
@@ -23,9 +24,14 @@ def aggregate_performance_curves(results_dir: Path) -> pd.DataFrame:
         metadata = load_experiment_metadata(exp_dir)
         df = pd.read_csv(csv_path)
         for key, value in metadata.items():
+            # Convert lists/dicts to JSON strings for storage
+            if isinstance(value, (list, dict)):
+                value = json.dumps(value)
             df[key] = value
         dfs.append(df)
-    return pd.concat(dfs, ignore_index=True)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="The behavior of DataFrame concatenation with empty or all-NA entries is deprecated", category=FutureWarning)
+        return pd.concat(dfs, ignore_index=True)
 
 
 def aggregate_spectral_curves(results_dir: Path) -> pd.DataFrame:
@@ -44,9 +50,14 @@ def aggregate_spectral_curves(results_dir: Path) -> pd.DataFrame:
         metadata = load_experiment_metadata(exp_dir)
         df = pd.read_csv(candidates[0])
         for key, value in metadata.items():
+            # Convert lists/dicts to JSON strings for storage
+            if isinstance(value, (list, dict)):
+                value = json.dumps(value)
             df[key] = value
         dfs.append(df)
-    return pd.concat(dfs, ignore_index=True)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="The behavior of DataFrame concatenation with empty or all-NA entries is deprecated", category=FutureWarning)
+        return pd.concat(dfs, ignore_index=True)
 
 
 def cmd_aggregate_sep_results(args: argparse.Namespace) -> None:
