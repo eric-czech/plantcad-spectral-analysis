@@ -11,6 +11,7 @@ This script:
    - "ntv2": hidden states from Nucleotide Transformer v2 model (pooled via single_token/mean/max)
    - "hyena": hidden states from HyenaDNA model (pooled via single_token/mean/max)
    - "gpn": hidden states from GPN model (pooled via single_token/mean/max)
+   - "glmexp": hidden states from GLM-Experiments model (pooled via single_token/mean/max)
 4. Centers the data and runs PCA for each sample size
 5. Saves aggregated results to disk (checkpointing to avoid recomputation)
 6. Plots the eigenspectrum colored by sample size
@@ -46,6 +47,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
 from transformers import AutoConfig, AutoModel, AutoModelForCausalLM, AutoModelForMaskedLM, AutoTokenizer
+
 
 
 # Disable tokenizers parallelism to avoid deadlocks with multiprocessing
@@ -94,6 +96,7 @@ MARIN_MODEL_PATH = "plantcad/marin_exp1729__pcv1_600m_c512__checkpoints"
 NTV2_MODEL_PATH = "InstaDeepAI/nucleotide-transformer-2.5b-multi-species"
 HYENA_MODEL_PATH = "LongSafari/hyenadna-tiny-1k-seqlen-hf"
 GPN_MODEL_PATH = "songlab/gpn-brassicales"
+GLMEXP_MODEL_PATH = "gonzalobenegas/dev-glm-experiments-logs"
 DEFAULT_DTYPE = torch.bfloat16
 
 # Default dataset
@@ -106,7 +109,7 @@ UNKNOWN_SPECIES = "UNKNOWN"
 # Type aliases
 PoolingMethod = Literal["single_token", "mean", "max"]
 TokenizationMode = Literal["strict", "lenient"]
-FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand", "ntv2", "ntv2_rand", "hyena", "hyena_rand", "gpn", "gpn_rand"]
+FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand", "ntv2", "ntv2_rand", "hyena", "hyena_rand", "gpn", "gpn_rand", "glmexp", "glmexp_rand"]
 
 
 # =============================================================================
@@ -445,6 +448,117 @@ def load_gpn_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
     )
 
 
+class GLMExpEmbedder(torch.nn.Module):
+    """Wrapper module to extract embeddings from GLM-Experiments Lightning checkpoint."""
+    
+    def __init__(self, lit_module, hidden_size: int):
+        super().__init__()
+        self.lit_module = lit_module
+        self.hidden_size = hidden_size
+        # Create a mock config for compatibility with extract_model_embeddings
+        self.config = type('Config', (), {'hidden_size': hidden_size})()
+    
+    def forward(self, input_ids, output_hidden_states=True):
+        """Forward pass that extracts embeddings."""
+        # Manually run through the model components to get embeddings
+        x = self.lit_module.net.embedder(input_ids.long())  # (batch, seq_len, hidden_dim)
+        x = self.lit_module.net.encoder(x)                   # (batch, seq_len, hidden_dim)
+        embeddings = self.lit_module.net.layer_norm(x)       # (batch, seq_len, hidden_dim)
+        
+        # Return in a format compatible with extract_model_embeddings
+        # Create a mock output object
+        output = type('Output', (), {'last_hidden_state': embeddings})()
+        return output
+
+
+def load_glmexp_model(args) -> tuple[GLMExpEmbedder, AutoTokenizer]:
+    """Load GLM-Experiments model from Lightning checkpoint and tokenizer.
+    
+    This function handles the complexity of loading a Lightning checkpoint
+    and wraps it in a simple interface compatible with extract_model_embeddings.
+    """
+    from huggingface_hub import hf_hub_download
+    from omegaconf import OmegaConf
+    import hydra
+    from glm_experiments.models.lm_lit_module import MLMLitModule
+    model_path = args.model_path if args.model_path is not None else GLMEXP_MODEL_PATH
+    random_init = args.source == "glmexp_rand"
+    
+    # Hard-coded checkpoint and config paths
+    checkpoint_filename = "train/runs/2025-12-04_18-27-29/checkpoints/20000.ckpt"
+    config_filename = "train/runs/2025-12-04_18-27-29/.hydra/config.yaml"
+    tokenizer_path = "gonzalobenegas/tokenizer-dna-mlm"
+    
+    init_str = " (random init)" if random_init else ""
+    print(f"Loading GLM-Experiments Lightning checkpoint from {model_path}{init_str}...")
+    
+    # Download checkpoint and config from HuggingFace (will be cached)
+    print(f"  Downloading checkpoint from HuggingFace...")
+    checkpoint_path = hf_hub_download(
+        repo_id=model_path,
+        filename=checkpoint_filename,
+        repo_type="dataset",
+    )
+    
+    print(f"  Downloading config from HuggingFace...")
+    config_path = hf_hub_download(
+        repo_id=model_path,
+        filename=config_filename,
+        repo_type="dataset",
+    )
+    
+    # Load the config
+    print(f"  Loading config...")
+    cfg = OmegaConf.load(config_path)
+    
+    # For inference only, replace the scheduler with a dummy (we don't need it)
+    print(f"  Replacing scheduler/optimizer with dummies for inference...")
+    cfg.model.scheduler = {
+        "_target_": "torch.optim.lr_scheduler.ConstantLR",
+        "_partial_": True,
+        "factor": 1.0,
+    }
+    cfg.model.optimizer = {
+        "_target_": "torch.optim.AdamW",
+        "_partial_": True,
+        "lr": 1e-4,
+    }
+    
+    # Instantiate the model from config
+    print(f"  Instantiating model from config...")
+    lit_module: MLMLitModule = hydra.utils.instantiate(cfg.model)
+    
+    if not random_init:
+        # Load the checkpoint weights
+        print(f"  Loading checkpoint weights...")
+        checkpoint = torch.load(checkpoint_path, map_location="cpu")
+        lit_module.load_state_dict(checkpoint["state_dict"])
+    else:
+        print(f"  Using random initialization (skipping checkpoint weights)")
+    
+    lit_module.eval()
+    
+    # Get hidden size from the model
+    hidden_size = lit_module.net.encoder.hidden_size
+    
+    # Create wrapper module
+    model = GLMExpEmbedder(lit_module, hidden_size)
+    model = model.to(args.device, dtype=args.dtype)
+    
+    # Print model details
+    n_params = sum(p.numel() for p in model.parameters())
+    print(f"  Hidden size: {hidden_size}")
+    print(f"  Parameters: {n_params:,} ({n_params / 1e6:.1f}M)")
+    print(f"  Device: {args.device}, Dtype: {args.dtype}")
+    
+    # Load tokenizer
+    print(f"  Loading tokenizer from {tokenizer_path}...")
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
+    print(f"  Tokenizer vocab size: {len(tokenizer)}")
+    
+    return model, tokenizer
+
+
 def tokenize_sequences(
     sequences: list[str],
     tokenizer: AutoTokenizer,
@@ -584,8 +698,8 @@ def extract_model_embeddings(
         input_ids = torch.tensor(input_ids_list, dtype=torch.long, device=device)
         
         with torch.inference_mode():
-            if source.startswith("gpn"):
-                # Handle edge case w/ gpn not supporting output_hidden_states
+            if source.startswith("gpn") or source.startswith("glmexp"):
+                # Handle edge case w/ gpn and glmexp not supporting output_hidden_states
                 outputs = model(input_ids=input_ids)
                 hidden_states = outputs.last_hidden_state # (batch, seq_len, hidden_dim)
             else:
@@ -921,6 +1035,8 @@ def convert_to_features(
         model, tokenizer = load_hyena_model(args)
     elif args.source in ("gpn", "gpn_rand"):
         model, tokenizer = load_gpn_model(args)
+    elif args.source in ("glmexp", "glmexp_rand"):
+        model, tokenizer = load_glmexp_model(args)
     else:
         raise ValueError(f"Unknown source: {args.source}")
     
@@ -1059,6 +1175,8 @@ SOURCE_ABBREVS = {
     "hyena_rand": "hyenarand",
     "gpn": "gpn",
     "gpn_rand": "gpnrand",
+    "glmexp": "glmexp",
+    "glmexp_rand": "glmexprand",
 }
 MODEL_SOURCES = [s for s in SOURCE_ABBREVS if s != "sequence"]
 
@@ -1798,7 +1916,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pooling_method", type=str, choices=["single_token", "mean", "max"], default="mean",
                         help="Pooling method: 'single_token' (center for MaskedLM, last for CausalLM), 'mean', or 'max'")
     parser.add_argument("--model_path", type=str, default=None,
-                        help=f"Model path (default: {PLANTCAD_MODEL_PATH} for plantcad, {MARIN_MODEL_PATH} for marin, {NTV2_MODEL_PATH} for ntv2, {HYENA_MODEL_PATH} for hyena, {GPN_MODEL_PATH} for gpn)")
+                        help=f"Model path (default: {PLANTCAD_MODEL_PATH} for plantcad, {MARIN_MODEL_PATH} for marin, {NTV2_MODEL_PATH} for ntv2, {HYENA_MODEL_PATH} for hyena, {GPN_MODEL_PATH} for gpn, {GLMEXP_MODEL_PATH} for glmexp)")
     parser.add_argument("--model_subfolder", type=str, default="",
                         help="Subfolder within model path (default: empty string)")
     parser.add_argument("--model_revision", type=str, default=None,

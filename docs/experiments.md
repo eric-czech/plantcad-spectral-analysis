@@ -39,19 +39,29 @@ See `results/sep/experiment_schema.json` for the full metadata schema and each `
 
 ```bash
 # PlantCAD2-S at full context length
-python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v13 --pooling_method mean --batch_size 32 --seq_len 8192 --force
+python scripts/plantcad_eigenanalysis.py \
+  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v13 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # Random init of PlantCAD2-S at full context length
-python scripts/plantcad_eigenanalysis.py --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v14 --pooling_method mean --batch_size 32 --seq_len 8192 --force
+python scripts/plantcad_eigenanalysis.py \
+  --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+    --output_dir results/sep/v14 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # PlantCAD2-S at 4096bp context length
-python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v15 --pooling_method mean --batch_size 32 --seq_len 4096 --force
+python scripts/plantcad_eigenanalysis.py \
+  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v15 --pooling_method mean --batch_size 32 --seq_len 4096 --force
 
 # PlantCAD2-S at 4096bp context length with random init
-python scripts/plantcad_eigenanalysis.py --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v12 --pooling_method mean --batch_size 32 --seq_len 4096 --force
+python scripts/plantcad_eigenanalysis.py \
+  --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v12 --pooling_method mean --batch_size 32 --seq_len 4096 --force
 
 # PlantCAD2-S at full context length using validation split rather than train split
-python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v11 --pooling_method mean --batch_size 32 --seq_len 8192 --split validation --force
+python scripts/plantcad_eigenanalysis.py \
+  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v11 --pooling_method mean --batch_size 32 --seq_len 8192 --split validation --force
 ```
 
 ### DNA/Plants/Marin
@@ -279,6 +289,39 @@ python scripts/plantcad_eigenanalysis.py \
   --dtype float32 --tokenization_mode lenient \
   --split train \
   --pooling_method mean --batch_size 256 --seq_len 512
+```
+
+glm-experiments runs:
+
+```bash
+# ------
+# git clone https://github.com/Open-Athena/glm-experiments.git
+# cd glm-experiments
+# git checkout b46cf87c2926201473797f9b00c13e1781c16403
+# python -m pip install --no-deps -e .
+# ------
+# Filtered to 65 species
+python scripts/plantcad_eigenanalysis.py \
+  --source glmexp --n_samples 16384 65536 262144 \
+  --output_dir results/sep/v39 \
+  --dataset_path eczech/gpn-animal-promoter-dataset \
+  --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
+  --species_column organism \
+  --species_filter_file /tmp/gpn_promoter_species_filter.txt \
+  --dtype bfloat16 --tokenization_mode strict \
+  --split train \
+  --pooling_method mean --batch_size 1024 --seq_len 512
+
+# No species filtering
+python scripts/plantcad_eigenanalysis.py \
+  --source glmexp --n_samples 16384 65536 262144 \
+  --output_dir results/sep/v40 \
+  --dataset_path eczech/gpn-animal-promoter-dataset \
+  --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
+  --species_column organism \
+  --dtype bfloat16 --tokenization_mode strict \
+  --split train \
+  --pooling_method mean --batch_size 1024 --seq_len 512
 ```
 
 ### Text
