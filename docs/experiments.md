@@ -223,8 +223,25 @@ python scripts/plantcad_eigenanalysis.py \
   --dataset_revision 4a444fff5520b992aa978d92a5af509a81977098 \
   --dtype float32 --tokenization_mode lenient \
   --split train \
-  --pooling_method mean --batch_size 8 --seq_len 6144
+  --pooling_method mean --batch_size 64 --seq_len 6144
 
+```
+
+Hyena experiments:
+
+```bash
+python scripts/plantcad_eigenanalysis.py \
+  --source hyena --n_samples 16384 65536 262144 \
+  --device cuda --output_dir results/sep/v37 \
+  --model_path LongSafari/hyenadna-tiny-1k-seqlen-hf \
+  --model_revision e8c1effa8673814e257e627d2e1eda9ea5a373f6 \
+  --dataset_path eczech/gpn-animal-promoter-dataset \
+  --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
+  --species_column organism \
+  --species_filter_file /tmp/gpn_promoter_species_filter.txt \
+  --dtype float32 --tokenization_mode lenient \
+  --split train \
+  --pooling_method mean --batch_size 256 --seq_len 512
 ```
 
 ### Text
@@ -233,7 +250,8 @@ Experiments on [Salesforce/wikitext](https://huggingface.co/datasets/Salesforce/
 
 ```bash
 # Wikitext + very small-scale Qwen local pretrain
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 8192 16384 \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 8192 16384 \
   --device cuda --output_dir results/sep/v29 \
   --dataset_path Salesforce/wikitext \
   --dataset_revision b08601e04326c79dfdd32d625aee71d232d685c3 \
@@ -246,7 +264,8 @@ python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 409
   --pooling_method mean --batch_size 64 --seq_len 4096
   
 # Qwen2-1.5B + DCLM-Edu
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 8192 16384 \
+python scripts/plantcad_eigenanalysis.py \
+--source marin --n_samples 512 1024 4096 8192 16384 \
   --device cuda --output_dir results/sep/v30 \
   --model_path Qwen/Qwen2-1.5B \
   --dataset_path HuggingFaceTB/dclm-edu \
@@ -257,14 +276,29 @@ python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 409
   --split train \
   --pooling_method mean --batch_size 16 --seq_len 4096
 
-# Qwen2-1.5B + DCLM-Baseline (TODO: run)
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 8192 16384 \
-  --device cuda --output_dir results/sep/v?? \
+# Qwen2-1.5B + DCLM-Baseline
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 16384 \
+  --device cuda --output_dir results/sep/v35 \
   --model_path Qwen/Qwen2-1.5B \
   --dataset_path mlfoundations/dclm-baseline-1.0 \
   --dataset_revision a3b142c183aebe5af344955ae20836eb34dcf69b \
   --dataset_sample_size 262144 \
   --text_column text \
+  --tokenization_mode lenient \
+  --split train \
+  --pooling_method mean --batch_size 16 --seq_len 4096
+
+# Qwen2-1.5B + StarCoder 
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 16384 \
+  --device cuda --output_dir results/sep/v36 \
+  --model_path Qwen/Qwen2-1.5B \
+  --dataset_path bigcode/starcoderdata \
+  --dataset_revision 9fc30b578cedaec69e47302df72cf00feed7c8c4 \
+  --dataset_sample_size 262144 \
+  --dataset_dir python \
+  --text_column content \
   --tokenization_mode lenient \
   --split train \
   --pooling_method mean --batch_size 16 --seq_len 4096

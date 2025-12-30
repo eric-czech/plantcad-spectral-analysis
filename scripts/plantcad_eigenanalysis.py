@@ -9,6 +9,7 @@ This script:
    - "plantcad": hidden states from PlantCAD2 model (forward direction, pooled via single_token/mean/max)
    - "marin": hidden states from Marin model (pooled via single_token/mean/max)
    - "ntv2": hidden states from Nucleotide Transformer v2 model (pooled via single_token/mean/max)
+   - "hyena": hidden states from HyenaDNA model (pooled via single_token/mean/max)
 4. Centers the data and runs PCA for each sample size
 5. Saves aggregated results to disk (checkpointing to avoid recomputation)
 6. Plots the eigenspectrum colored by sample size
@@ -90,6 +91,7 @@ DINUCLEOTIDES = ['CG', 'GC', 'AT', 'TA', 'AA', 'TT']
 PLANTCAD_MODEL_PATH = "kuleshov-group/PlantCAD2-Small-l24-d0768"
 MARIN_MODEL_PATH = "plantcad/marin_exp1729__pcv1_600m_c512__checkpoints"
 NTV2_MODEL_PATH = "InstaDeepAI/nucleotide-transformer-2.5b-multi-species"
+HYENA_MODEL_PATH = "LongSafari/hyenadna-tiny-1k-seqlen-hf"
 DEFAULT_DTYPE = torch.bfloat16
 
 # Default dataset
@@ -102,7 +104,7 @@ UNKNOWN_SPECIES = "UNKNOWN"
 # Type aliases
 PoolingMethod = Literal["single_token", "mean", "max"]
 TokenizationMode = Literal["strict", "lenient"]
-FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand", "ntv2", "ntv2_rand"]
+FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand", "ntv2", "ntv2_rand", "hyena", "hyena_rand"]
 
 
 # =============================================================================
@@ -274,14 +276,26 @@ def encode_sequences_to_onehot(
     return data_matrix, softmasked_counts
 
 
-def _get_hidden_size(config) -> int:
-    """Get hidden size from model config (handles d_model or hidden_size)."""
-    if hasattr(config, 'd_model'):
-        return config.d_model
-    elif hasattr(config, 'hidden_size'):
-        return config.hidden_size
+def _get_hidden_size(config, source: FeatureSource) -> int:
+    """Get hidden size from model config (handles d_model or hidden_size).
+    
+    Args:
+        config: Model config object
+        source: Feature source (used to determine which attribute to use)
+        
+    Returns:
+        Hidden size dimension
+    """
+    if source.startswith("plantcad") or source.startswith("hyena"):
+        if hasattr(config, 'd_model'):
+            return config.d_model
+        else:
+            raise AttributeError(f"Config for {source} does not have 'd_model': {config}")
     else:
-        raise AttributeError(f"Config has neither 'd_model' nor 'hidden_size': {config}")
+        if hasattr(config, 'hidden_size'):
+            return config.hidden_size
+        else:
+            raise AttributeError(f"Config for {source} does not have 'hidden_size': {config}")
 
 
 def _load_model_and_tokenizer(
@@ -292,6 +306,7 @@ def _load_model_and_tokenizer(
     random_init: bool,
     subfolder: str,
     revision: str | None,
+    source: FeatureSource,
 ) -> tuple:
     """Shared helper to load a model and tokenizer.
     
@@ -303,6 +318,7 @@ def _load_model_and_tokenizer(
         random_init: If True, use random weights (architecture from config only)
         subfolder: Optional subfolder within model_path
         revision: Optional git revision/commit hash for the model
+        source: Feature source (used to determine which config attribute to use)
     """
     class_name = model_class.__name__
     init_str = " (random init)" if random_init else ""
@@ -331,7 +347,7 @@ def _load_model_and_tokenizer(
     
     # Print model details
     n_params = sum(p.numel() for p in model.parameters())
-    hidden_size = _get_hidden_size(model.config)
+    hidden_size = _get_hidden_size(model.config, source)
     print(f"  Hidden size: {hidden_size}")
     print(f"  Parameters: {n_params:,} ({n_params / 1e6:.1f}M)")
     print(f"  Device: {device}, Dtype: {model.dtype}")
@@ -340,71 +356,71 @@ def _load_model_and_tokenizer(
     return model, tokenizer
 
 
-def load_plantcad_model(
-    model_path: str | None,
-    subfolder: str,
-    device: str,
-    dtype: torch.dtype,
-    random_init: bool,
-    revision: str | None,
-) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
+def load_plantcad_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
     """Load PlantCAD model and tokenizer."""
-    if model_path is None:
-        model_path = PLANTCAD_MODEL_PATH
+    model_path = args.model_path if args.model_path is not None else PLANTCAD_MODEL_PATH
+    random_init = args.source == "plantcad_rand"
     return _load_model_and_tokenizer(
         model_path=model_path,
         model_class=AutoModelForMaskedLM,
-        device=device,
-        dtype=dtype,
+        device=args.device,
+        dtype=args.dtype,
         random_init=random_init,
-        subfolder=subfolder,
-        revision=revision,
+        subfolder=args.model_subfolder,
+        revision=args.model_revision,
+        source=args.source,
     )
 
 
-def load_marin_model(
-    model_path: str | None,
-    subfolder: str,
-    device: str,
-    dtype: torch.dtype,
-    random_init: bool,
-    revision: str | None,
-) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
+def load_marin_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
     """Load Marin model and tokenizer."""
-    if model_path is None:
-        model_path = MARIN_MODEL_PATH
+    model_path = args.model_path if args.model_path is not None else MARIN_MODEL_PATH
+    random_init = args.source == "marin_rand"
     return _load_model_and_tokenizer(
         model_path=model_path,
         model_class=AutoModelForCausalLM,
-        device=device,
-        dtype=dtype,
+        device=args.device,
+        dtype=args.dtype,
         random_init=random_init,
-        subfolder=subfolder,
-        revision=revision,
+        subfolder=args.model_subfolder,
+        revision=args.model_revision,
+        source=args.source,
     )
 
 
-def load_ntv2_model(
-    model_path: str | None,
-    subfolder: str,
-    device: str,
-    dtype: torch.dtype,
-    random_init: bool,
-    revision: str | None,
-) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
+def load_ntv2_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
     """Load Nucleotide Transformer v2 model and tokenizer."""
-    if model_path is None:
-        model_path = NTV2_MODEL_PATH
-    if dtype != torch.float32:
+    model_path = args.model_path if args.model_path is not None else NTV2_MODEL_PATH
+    random_init = args.source == "ntv2_rand"
+    if args.dtype != torch.float32:
         raise ValueError("NTv2 model only supports float32 dtype")
     return _load_model_and_tokenizer(
         model_path=model_path,
         model_class=AutoModelForMaskedLM,
-        device=device,
-        dtype=dtype,
+        device=args.device,
+        dtype=args.dtype,
         random_init=random_init,
-        subfolder=subfolder,
-        revision=revision,
+        subfolder=args.model_subfolder,
+        revision=args.model_revision,
+        source=args.source,
+    )
+
+
+def load_hyena_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
+    """Load Hyena model and tokenizer."""
+    model_path = args.model_path if args.model_path is not None else HYENA_MODEL_PATH
+    random_init = args.source == "hyena_rand"
+    if args.dtype != torch.float32:
+        raise ValueError("Hyena model only supports float32 dtype")
+    return _load_model_and_tokenizer(
+        model_path=model_path,
+        model_class=AutoModelForCausalLM,
+        device=args.device,
+        dtype=args.dtype,
+        random_init=random_init,
+        subfolder=args.model_subfolder,
+        revision=args.model_revision,
+        source=args.source,
     )
 
 
@@ -441,6 +457,10 @@ def tokenize_sequences(
         if expected_length < 1:
             raise ValueError(f"Sequence length {sequence_length} is too short for NTv2 tokenizer")
         # NTv2 tokenizer expects uppercase sequences
+        sequences = [seq.upper() for seq in sequences]
+
+    if source.startswith("hyena"):
+        # Hyena tokenizer expects uppercase sequences
         sequences = [seq.upper() for seq in sequences]
 
     # Tokenize based on mode
@@ -516,11 +536,11 @@ def extract_model_embeddings(
     
     # Get expected hidden size from config
     if slice_hidden:
-        d_model = model.config.d_model
+        d_model = _get_hidden_size(model.config, source)
         expected_hidden_dim = 2 * d_model  # Bidirectional: forward + backward
         output_dim = d_model
     else:
-        output_dim = model.config.hidden_size
+        output_dim = _get_hidden_size(model.config, source)
         expected_hidden_dim = output_dim
     
     embeddings = []
@@ -792,7 +812,7 @@ def load_raw_data(
     if args.dataset_sample_size is not None:
         print(f"Loading dataset from HuggingFace with streaming (path={args.dataset_path}{dataset_config_msg}, revision={args.dataset_revision}, split={args.split})...")
         print(f"  Taking first {args.dataset_sample_size:,} records from stream...")
-        dataset_stream = load_dataset(args.dataset_path, args.dataset_config, split=args.split, revision=args.dataset_revision, streaming=True, trust_remote_code=True)
+        dataset_stream = load_dataset(args.dataset_path, args.dataset_config, split=args.split, revision=args.dataset_revision, streaming=True, trust_remote_code=True, data_dir=args.dataset_dir)
 
         if args.dataset_shuffle:
             print(f"  Shuffling stream with buffer_size={shuffle_buffer_size}, seed={args.seed}...")
@@ -803,7 +823,7 @@ def load_raw_data(
         print(f"  Materialized {len(dataset):,} records from stream")
     else:
         print(f"Loading dataset from HuggingFace (path={args.dataset_path}{dataset_config_msg}, revision={args.dataset_revision}, split={args.split})...")
-        dataset = load_dataset(args.dataset_path, args.dataset_config, split=args.split, revision=args.dataset_revision, trust_remote_code=True)
+        dataset = load_dataset(args.dataset_path, args.dataset_config, split=args.split, revision=args.dataset_revision, trust_remote_code=True, data_dir=args.dataset_dir)
         
         if args.dataset_shuffle:
             print(f"  Shuffling dataset with seed={args.seed}...")
@@ -866,35 +886,13 @@ def convert_to_features(
     if args.source == "sequence":
         return extract_onehot_features(sequences, args.seq_len)
     elif args.source in ("plantcad", "plantcad_rand"):
-        random_init = args.source == "plantcad_rand"
-        model, tokenizer = load_plantcad_model(
-            model_path=args.model_path,
-            subfolder=args.model_subfolder,
-            device=args.device,
-            dtype=args.dtype,
-            random_init=random_init,
-            revision=args.model_revision,
-        )
+        model, tokenizer = load_plantcad_model(args)
     elif args.source in ("marin", "marin_rand"):
-        random_init = args.source == "marin_rand"
-        model, tokenizer = load_marin_model(
-            model_path=args.model_path,
-            subfolder=args.model_subfolder,
-            device=args.device,
-            dtype=args.dtype,
-            random_init=random_init,
-            revision=args.model_revision,
-        )
+        model, tokenizer = load_marin_model(args)
     elif args.source in ("ntv2", "ntv2_rand"):
-        random_init = args.source == "ntv2_rand"
-        model, tokenizer = load_ntv2_model(
-            model_path=args.model_path,
-            subfolder=args.model_subfolder,
-            device=args.device,
-            dtype=args.dtype,
-            random_init=random_init,
-            revision=args.model_revision,
-        )
+        model, tokenizer = load_ntv2_model(args)
+    elif args.source in ("hyena", "hyena_rand"):
+        model, tokenizer = load_hyena_model(args)
     else:
         raise ValueError(f"Unknown source: {args.source}")
     
@@ -1029,6 +1027,8 @@ SOURCE_ABBREVS = {
     "marin_rand": "marinrand",
     "ntv2": "ntv2",
     "ntv2_rand": "ntv2rand",
+    "hyena": "hyena",
+    "hyena_rand": "hyenarand",
 }
 MODEL_SOURCES = [s for s in SOURCE_ABBREVS if s != "sequence"]
 
@@ -1768,7 +1768,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pooling_method", type=str, choices=["single_token", "mean", "max"], default="mean",
                         help="Pooling method: 'single_token' (center for MaskedLM, last for CausalLM), 'mean', or 'max'")
     parser.add_argument("--model_path", type=str, default=None,
-                        help=f"Model path (default: {PLANTCAD_MODEL_PATH} for plantcad, {MARIN_MODEL_PATH} for marin, {NTV2_MODEL_PATH} for ntv2)")
+                        help=f"Model path (default: {PLANTCAD_MODEL_PATH} for plantcad, {MARIN_MODEL_PATH} for marin, {NTV2_MODEL_PATH} for ntv2, {HYENA_MODEL_PATH} for hyena)")
     parser.add_argument("--model_subfolder", type=str, default="",
                         help="Subfolder within model path (default: empty string)")
     parser.add_argument("--model_revision", type=str, default=None,
@@ -1799,6 +1799,8 @@ def parse_args() -> argparse.Namespace:
                         help="Number of records to take from dataset using streaming. If None (default), load full dataset normally.")
     parser.add_argument("--dataset_shuffle", action="store_true", default=False,
                         help="Shuffle the dataset using the specified seed. Default: False")
+    parser.add_argument("--dataset_dir", type=str, default=None,
+                        help="Directory for loading dataset (data_dir parameter for load_dataset). Default: None")
     return parser.parse_args()
 
 
