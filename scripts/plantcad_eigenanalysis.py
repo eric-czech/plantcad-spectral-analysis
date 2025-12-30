@@ -10,6 +10,7 @@ This script:
    - "marin": hidden states from Marin model (pooled via single_token/mean/max)
    - "ntv2": hidden states from Nucleotide Transformer v2 model (pooled via single_token/mean/max)
    - "hyena": hidden states from HyenaDNA model (pooled via single_token/mean/max)
+   - "gpn": hidden states from GPN model (pooled via single_token/mean/max)
 4. Centers the data and runs PCA for each sample size
 5. Saves aggregated results to disk (checkpointing to avoid recomputation)
 6. Plots the eigenspectrum colored by sample size
@@ -44,7 +45,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
-from transformers import AutoConfig, AutoModelForCausalLM, AutoModelForMaskedLM, AutoTokenizer
+from transformers import AutoConfig, AutoModel, AutoModelForCausalLM, AutoModelForMaskedLM, AutoTokenizer
 
 
 # Disable tokenizers parallelism to avoid deadlocks with multiprocessing
@@ -92,6 +93,7 @@ PLANTCAD_MODEL_PATH = "kuleshov-group/PlantCAD2-Small-l24-d0768"
 MARIN_MODEL_PATH = "plantcad/marin_exp1729__pcv1_600m_c512__checkpoints"
 NTV2_MODEL_PATH = "InstaDeepAI/nucleotide-transformer-2.5b-multi-species"
 HYENA_MODEL_PATH = "LongSafari/hyenadna-tiny-1k-seqlen-hf"
+GPN_MODEL_PATH = "songlab/gpn-brassicales"
 DEFAULT_DTYPE = torch.bfloat16
 
 # Default dataset
@@ -104,7 +106,7 @@ UNKNOWN_SPECIES = "UNKNOWN"
 # Type aliases
 PoolingMethod = Literal["single_token", "mean", "max"]
 TokenizationMode = Literal["strict", "lenient"]
-FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand", "ntv2", "ntv2_rand", "hyena", "hyena_rand"]
+FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand", "ntv2", "ntv2_rand", "hyena", "hyena_rand", "gpn", "gpn_rand"]
 
 
 # =============================================================================
@@ -424,6 +426,25 @@ def load_hyena_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
     )
 
 
+def load_gpn_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
+    """Load GPN model and tokenizer."""
+    # Register AutoClass types; see:
+    # https://github.com/songlab-cal/gpn?tab=readme-ov-file#quick-start
+    import gpn.model
+    model_path = args.model_path if args.model_path is not None else GPN_MODEL_PATH
+    random_init = args.source == "gpn_rand"
+    return _load_model_and_tokenizer(
+        model_path=model_path,
+        model_class=AutoModel,
+        device=args.device,
+        dtype=args.dtype,
+        random_init=random_init,
+        subfolder=args.model_subfolder,
+        revision=args.model_revision,
+        source=args.source,
+    )
+
+
 def tokenize_sequences(
     sequences: list[str],
     tokenizer: AutoTokenizer,
@@ -563,8 +584,13 @@ def extract_model_embeddings(
         input_ids = torch.tensor(input_ids_list, dtype=torch.long, device=device)
         
         with torch.inference_mode():
-            outputs = model(input_ids, output_hidden_states=True)
-            hidden_states = outputs.hidden_states[-1]  # (batch, seq_len, hidden_dim)
+            if source.startswith("gpn"):
+                # Handle edge case w/ gpn not supporting output_hidden_states
+                outputs = model(input_ids=input_ids)
+                hidden_states = outputs.last_hidden_state # (batch, seq_len, hidden_dim)
+            else:
+                outputs = model(input_ids, output_hidden_states=True)
+                hidden_states = outputs.hidden_states[-1]  # (batch, seq_len, hidden_dim)
             seq_len = hidden_states.shape[1]
             hidden_dim = hidden_states.shape[2]
             
@@ -893,6 +919,8 @@ def convert_to_features(
         model, tokenizer = load_ntv2_model(args)
     elif args.source in ("hyena", "hyena_rand"):
         model, tokenizer = load_hyena_model(args)
+    elif args.source in ("gpn", "gpn_rand"):
+        model, tokenizer = load_gpn_model(args)
     else:
         raise ValueError(f"Unknown source: {args.source}")
     
@@ -1029,6 +1057,8 @@ SOURCE_ABBREVS = {
     "ntv2_rand": "ntv2rand",
     "hyena": "hyena",
     "hyena_rand": "hyenarand",
+    "gpn": "gpn",
+    "gpn_rand": "gpnrand",
 }
 MODEL_SOURCES = [s for s in SOURCE_ABBREVS if s != "sequence"]
 
@@ -1768,7 +1798,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pooling_method", type=str, choices=["single_token", "mean", "max"], default="mean",
                         help="Pooling method: 'single_token' (center for MaskedLM, last for CausalLM), 'mean', or 'max'")
     parser.add_argument("--model_path", type=str, default=None,
-                        help=f"Model path (default: {PLANTCAD_MODEL_PATH} for plantcad, {MARIN_MODEL_PATH} for marin, {NTV2_MODEL_PATH} for ntv2, {HYENA_MODEL_PATH} for hyena)")
+                        help=f"Model path (default: {PLANTCAD_MODEL_PATH} for plantcad, {MARIN_MODEL_PATH} for marin, {NTV2_MODEL_PATH} for ntv2, {HYENA_MODEL_PATH} for hyena, {GPN_MODEL_PATH} for gpn)")
     parser.add_argument("--model_subfolder", type=str, default="",
                         help="Subfolder within model path (default: empty string)")
     parser.add_argument("--model_revision", type=str, default=None,

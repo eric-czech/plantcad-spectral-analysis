@@ -1,0 +1,24 @@
+Run started: 2025-12-30T11:07:10.388827
+Arguments: Namespace(source='ntv2', n_samples=[16384, 32768, 65536], seq_len=6144, pooling_method='mean', model_path='InstaDeepAI/agro-nucleotide-transformer-1b', model_subfolder='', model_revision='b0e1ea1f53a2bf5bb29f8eab7a7e553bf06c1ab1', seed=42, batch_size=64, device='cuda', dtype=torch.float32, output_dir='results/sep/v34', force=False, species_filter=None, species_filter_file=None, species_column='assembly', split='train', dataset_path='plantcad/Angiosperm_65_genomes_8192bp', dataset_config=None, dataset_revision='4a444fff5520b992aa978d92a5af509a81977098', text_column='seq', tokenization_mode='lenient', dataset_sample_size=None, dataset_shuffle=False, dataset_dir=None)
+
+============================================================
+Eigenspectrum Analysis of DNA Sequences
+============================================================
+Parameters:
+  - Source: ntv2
+  - Sample sizes: [16384, 32768, 65536]
+  - Sequence length: 6144 bp
+  - Feature dimension: model hidden size
+  - Pooling method: mean
+
+Loading dataset from HuggingFace (path=plantcad/Angiosperm_65_genomes_8192bp, revision=4a444fff5520b992aa978d92a5af509a81977098, split=train)...
+Resolving data files:   0%|          | 0/45 [00:00<?, ?it/s]Resolving data files:   2%|2         | 1/45 [00:00<00:07,  5.54it/s]Resolving data files: 100%|##########| 45/45 [00:00<00:00, 249.03it/s]
+Loading dataset shards:   0%|          | 0/44 [00:00<?, ?it/s]Loading dataset shards:   2%|2         | 1/44 [00:00<00:08,  5.12it/s]Loading dataset shards:  16%|#5        | 7/44 [00:00<00:01, 25.93it/s]Loading dataset shards: 100%|##########| 44/44 [00:00<00:00, 105.79it/s]
+Dataset size: 2,638,656 records
+
+Preparing sequences (cropping to 6144 bp and filtering empty)...
+  Records before filtering: 2,638,656
+  Records after filtering: 2,638,656
+  Empty sequences filtered: 0
+Sampling 65536 records...
+Extracting records...

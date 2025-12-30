@@ -1,0 +1,32 @@
+Run started: 2025-12-30T10:52:27.559735
+Arguments: Namespace(source='gpn', n_samples=[8192, 16384, 65536, 262144], seq_len=512, pooling_method='mean', model_path='songlab/gpn-brassicales', model_subfolder='', model_revision='eb9c35d0d18571abe84390d22e74f2b21d319ce3', seed=42, batch_size=4096, device='cuda', dtype=torch.float32, output_dir='results/sep/v38', force=False, species_filter=None, species_filter_file='/tmp/gpn_plant_species_filter.txt', species_column='assembly', split='train', dataset_path='plantcad/Angiosperm_65_genomes_8192bp', dataset_config=None, dataset_revision='4a444fff5520b992aa978d92a5af509a81977098', text_column='seq', tokenization_mode='strict', dataset_sample_size=None, dataset_shuffle=False, dataset_dir=None)
+
+============================================================
+Eigenspectrum Analysis of DNA Sequences
+============================================================
+Parameters:
+  - Source: gpn
+  - Sample sizes: [8192, 16384, 65536, 262144]
+  - Sequence length: 512 bp
+  - Feature dimension: model hidden size
+  - Pooling method: mean
+
+Reading species list from: /tmp/gpn_plant_species_filter.txt
+  Loaded 3 species names (3 unique)
+Loading dataset from HuggingFace (path=plantcad/Angiosperm_65_genomes_8192bp, revision=4a444fff5520b992aa978d92a5af509a81977098, split=train)...
+Resolving data files:   0%|          | 0/45 [00:00<?, ?it/s]Resolving data files:   2%|2         | 1/45 [00:00<00:04,  9.80it/s]Resolving data files: 100%|##########| 45/45 [00:00<00:00, 382.95it/s]
+Loading dataset shards:   0%|          | 0/44 [00:00<?, ?it/s]Loading dataset shards: 100%|##########| 44/44 [00:00<00:00, 6057.35it/s]
+Dataset size: 2,638,656 records
+
+Filtering data to 3 species:
+  Athaliana, Crubella, Esalsugineum
+  Records before filtering: 2,638,656
+Filtering to 3 species (num_proc=72):   0%|          | 0/2638656 [00:00<?, ? examples/s]Filtering to 3 species (num_proc=72):   3%|3         | 88000/2638656 [00:00<00:02, 860921.92 examples/s]Filtering to 3 species (num_proc=72):  22%|##1       | 580000/2638656 [00:00<00:00, 3220331.23 examples/s]Filtering to 3 species (num_proc=72):  59%|#####9    | 1561720/2638656 [00:00<00:00, 6198951.28 examples/s]Filtering to 3 species (num_proc=72):  92%|#########1| 2417400/2638656 [00:00<00:00, 7106582.38 examples/s]Filtering to 3 species (num_proc=72): 100%|##########| 2638656/2638656 [00:00<00:00, 4753162.53 examples/s]
+  Records after filtering: 107,865
+
+Preparing sequences (cropping to 512 bp and filtering empty)...
+  Records before filtering: 107,865
+Cropping sequences (num_proc=72):   0%|          | 0/107865 [00:00<?, ? examples/s]Cropping sequences (num_proc=72):   1%|          | 939/107865 [00:00<00:12, 8430.36 examples/s]Cropping sequences (num_proc=72):  43%|####3     | 46606/107865 [00:00<00:00, 253752.21 examples/s]Cropping sequences (num_proc=72):  68%|######7   | 72931/107865 [00:00<00:00, 230077.83 examples/s]Cropping sequences (num_proc=72):  94%|#########4| 101921/107865 [00:00<00:00, 251406.97 examples/s]Cropping sequences (num_proc=72): 100%|##########| 107865/107865 [00:00<00:00, 196569.22 examples/s]
+Filtering empty sequences (num_proc=72):   0%|          | 0/107865 [00:00<?, ? examples/s]Filtering empty sequences (num_proc=72):  18%|#7        | 18985/107865 [00:00<00:00, 185522.08 examples/s]Filtering empty sequences (num_proc=72):  44%|####3     | 47447/107865 [00:00<00:00, 243155.78 examples/s]Filtering empty sequences (num_proc=72): 100%|##########| 107865/107865 [00:00<00:00, 222726.64 examples/s]
+  Records after filtering: 107,865
+  Empty sequences filtered: 0

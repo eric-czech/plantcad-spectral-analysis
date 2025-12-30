@@ -39,19 +39,19 @@ See `results/sep/experiment_schema.json` for the full metadata schema and each `
 
 ```bash
 # PlantCAD2-S at full context length
-python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --device cuda --output_dir results/sep/v13 --pooling_method mean --batch_size 32 --seq_len 8192 --force
+python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v13 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # Random init of PlantCAD2-S at full context length
-python scripts/plantcad_eigenanalysis.py --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 --device cuda --output_dir results/sep/v14 --pooling_method mean --batch_size 32 --seq_len 8192 --force
+python scripts/plantcad_eigenanalysis.py --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v14 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # PlantCAD2-S at 4096bp context length
-python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --device cuda --output_dir results/sep/v15 --pooling_method mean --batch_size 32 --seq_len 4096 --force
+python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v15 --pooling_method mean --batch_size 32 --seq_len 4096 --force
 
 # PlantCAD2-S at 4096bp context length with random init
-python scripts/plantcad_eigenanalysis.py --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 --device cuda --output_dir results/sep/v12 --pooling_method mean --batch_size 32 --seq_len 4096 --force
+python scripts/plantcad_eigenanalysis.py --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v12 --pooling_method mean --batch_size 32 --seq_len 4096 --force
 
 # PlantCAD2-S at full context length using validation split rather than train split
-python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --device cuda --output_dir results/sep/v11 --pooling_method mean --batch_size 32 --seq_len 8192 --split validation --force
+python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 --output_dir results/sep/v11 --pooling_method mean --batch_size 32 --seq_len 8192 --split validation --force
 ```
 
 ### DNA/Plants/Marin
@@ -61,8 +61,9 @@ python scripts/plantcad_eigenanalysis.py --source plantcad --n_samples 128 256 5
 # PoC model
 # ------------------------------------------------------------------------------------------------
 # For PoC 512bp model from https://github.com/marin-community/marin/issues/1729:
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 16384 65536 262144 \
-  --device cuda --output_dir results/sep/v16 --pooling_method mean \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v16 --pooling_method mean \
   --model_path plantcad/marin_exp1729__pcv1_600m_c512__checkpoints \
   --model_subfolder local_store/checkpoints/plantcad-train-600m-r16-a1bc43/hf/step-26782 \
   --batch_size 32 --seq_len 512 --force
@@ -74,35 +75,40 @@ python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 409
 
 ## Large width (original)
 ### Largest FLOP budget
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 16384 65536 262144 \
-  --device cuda --output_dir results/sep/v17 \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v17 \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.0-A_qwen-F8.2e+16-P25M-T810M-E1-56b128/hf/step-6184 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force 
 ### Smallest FLOP budget
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 16384 65536 262144 \
-  --device cuda --output_dir results/sep/v18 \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v18 \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.0-A_qwen-F3.3e+16-P9.4M-T746M-E1-c98aae/hf \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
 
 ## Small width (tiny models)
 ### Smallest FLOP budget
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 16384 65536 262144 \
-  --device cuda --output_dir results/sep/v19 \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v19 \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.5-A_qwen-F2.0e+15-P805.3K-T207M-E1-96174b/hf/step-6333 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
 ### Smallest FLOP budget + smallest params
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 16384 65536 262144 \
-  --device cuda --output_dir results/sep/v20 \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v20 \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.5-A_qwen-F2.0e+15-P74.6K-T1.1B-E1-b7ce45/hf/step-8166 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
   
 ### Largest FLOP budget
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 16384 65536 262144 \
-  --device cuda --output_dir results/sep/v21 \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v21 \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.5-A_qwen-F1.0e+16-P805.3K-T1.0B-E1-4d9c41/hf/step-7917 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
@@ -126,8 +132,9 @@ for i in "${!checkpoints[@]}"; do
   checkpoint="${checkpoints[$i]}"
   version="${versions[$i]}"
 
-  python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 16384 65536 262144 \
-    --device cuda --output_dir "results/sep/v${version}" \
+  python scripts/plantcad_eigenanalysis.py \
+    --source marin --n_samples 512 1024 4096 16384 65536 262144 \
+    --output_dir "results/sep/v${version}" \
     --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
     --model_subfolder "checkpoints/${checkpoint}" \
     --pooling_method mean --batch_size 32 --seq_len 4096 --force
@@ -135,12 +142,42 @@ done
 
 # Species filtering experiments, cf. https://github.com/plantcad/plantcad-dev/issues/39
 # Athaliana, Zmays, Gmax all show the same patterns, so only Zmays is used:
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 8192 16384 32768 \
-  --device cuda --output_dir results/sep/v27 \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 8192 16384 32768 \
+  --output_dir results/sep/v27 \
   --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_pretrain_fp32_v0.3 \
   --species_filter Zmays \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
+```
+
+### DNA/Plants/GPN
+
+```bash
+# pip install git+https://github.com/songlab-cal/gpn.git@99293f823a7f01dd5f9a05a7e2d7db701cda9228
+# Filter to species shared between PlantCAD2 and GPN; see:
+# https://www.pnas.org/doi/10.1073/pnas.2311219120#supplementary-materials
+# - Athaliana: Arabidopsis thaliana
+# - Crubella: Capsella rubella
+# - Esalsugineum: Eutrema salsugineum
+cat << EOF > /tmp/gpn_plant_species_filter.txt
+Athaliana
+Crubella
+Esalsugineum
+EOF
+# Note there are only 107,865 sequences remaining after filtering.
+python scripts/plantcad_eigenanalysis.py \
+  --source gpn --n_samples 8192 16384 65536 98304 \
+  --output_dir results/sep/v38 \
+  --model_path songlab/gpn-brassicales \
+  --model_revision eb9c35d0d18571abe84390d22e74f2b21d319ce3 \
+  --dataset_path plantcad/Angiosperm_65_genomes_8192bp \
+  --dataset_revision 4a444fff5520b992aa978d92a5af509a81977098 \
+  --species_filter_file /tmp/gpn_plant_species_filter.txt \
+  --species_column assembly \
+  --dtype float32 --tokenization_mode strict \
+  --split train \
+  --pooling_method mean --batch_size 4096 --seq_len 512
 ```
 
 ### DNA/Animals
@@ -157,7 +194,7 @@ curl -o /tmp/gpn_promoter_species_filter.txt https://gist.githubusercontent.com/
 # Run on species subset:
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 8192 16384 32768 65536 \
-  --device cuda --output_dir results/sep/v28 \
+  --output_dir results/sep/v28 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
@@ -169,7 +206,7 @@ python scripts/plantcad_eigenanalysis.py \
 # Run on all species
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 8192 16384 32768 65536 \
-  --device cuda --output_dir results/sep/v31 \
+  --output_dir results/sep/v31 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
@@ -185,7 +222,7 @@ NTv2 experiments:
 # NTv2 + multi-species genomes
 python scripts/plantcad_eigenanalysis.py \
   --source ntv2 --n_samples 4096 8192 16384 \
-  --device cuda --output_dir results/sep/v32 \
+  --output_dir results/sep/v32 \
   --model_path InstaDeepAI/nucleotide-transformer-v2-50m-multi-species \
   --model_revision 81b29e5786726d891dbf929404ef20adca5b36f1 \
   --dataset_path InstaDeepAI/multi_species_genomes \
@@ -201,7 +238,7 @@ python scripts/plantcad_eigenanalysis.py \
 # NTv2 + animal promoter dataset
 python scripts/plantcad_eigenanalysis.py \
   --source ntv2 --n_samples 4096 8192 16384 \
-  --device cuda --output_dir results/sep/v33 \
+  --output_dir results/sep/v33 \
   --model_path InstaDeepAI/nucleotide-transformer-v2-50m-multi-species \
   --model_revision 81b29e5786726d891dbf929404ef20adca5b36f1 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
@@ -215,8 +252,8 @@ python scripts/plantcad_eigenanalysis.py \
 # AgroNT + PlantCAD2 dataset; use 6144bp sequences for 1024 tokens, see:
 # https://huggingface.co/InstaDeepAI/agro-nucleotide-transformer-1b
 python scripts/plantcad_eigenanalysis.py \
-  --source ntv2 --n_samples 4096 8192 16384 \
-  --device cuda --output_dir results/sep/v34 \
+  --source ntv2 --n_samples 16384 32768 65536 \
+  --output_dir results/sep/v34 \
   --model_path InstaDeepAI/agro-nucleotide-transformer-1b \
   --model_revision b0e1ea1f53a2bf5bb29f8eab7a7e553bf06c1ab1 \
   --dataset_path plantcad/Angiosperm_65_genomes_8192bp \
@@ -232,7 +269,7 @@ Hyena experiments:
 ```bash
 python scripts/plantcad_eigenanalysis.py \
   --source hyena --n_samples 16384 65536 262144 \
-  --device cuda --output_dir results/sep/v37 \
+  --output_dir results/sep/v37 \
   --model_path LongSafari/hyenadna-tiny-1k-seqlen-hf \
   --model_revision e8c1effa8673814e257e627d2e1eda9ea5a373f6 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
@@ -252,7 +289,7 @@ Experiments on [Salesforce/wikitext](https://huggingface.co/datasets/Salesforce/
 # Wikitext + very small-scale Qwen local pretrain
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 8192 16384 \
-  --device cuda --output_dir results/sep/v29 \
+  --output_dir results/sep/v29 \
   --dataset_path Salesforce/wikitext \
   --dataset_revision b08601e04326c79dfdd32d625aee71d232d685c3 \
   --dataset_config wikitext-2-v1 \
@@ -266,7 +303,7 @@ python scripts/plantcad_eigenanalysis.py \
 # Qwen2-1.5B + DCLM-Edu
 python scripts/plantcad_eigenanalysis.py \
 --source marin --n_samples 512 1024 4096 8192 16384 \
-  --device cuda --output_dir results/sep/v30 \
+  --output_dir results/sep/v30 \
   --model_path Qwen/Qwen2-1.5B \
   --dataset_path HuggingFaceTB/dclm-edu \
   --dataset_revision dbad8ad71224482740cd9c9d353591adbf62fe04 \
@@ -279,7 +316,7 @@ python scripts/plantcad_eigenanalysis.py \
 # Qwen2-1.5B + DCLM-Baseline
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 16384 \
-  --device cuda --output_dir results/sep/v35 \
+  --output_dir results/sep/v35 \
   --model_path Qwen/Qwen2-1.5B \
   --dataset_path mlfoundations/dclm-baseline-1.0 \
   --dataset_revision a3b142c183aebe5af344955ae20836eb34dcf69b \
@@ -292,7 +329,7 @@ python scripts/plantcad_eigenanalysis.py \
 # Qwen2-1.5B + StarCoder 
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 16384 \
-  --device cuda --output_dir results/sep/v36 \
+  --output_dir results/sep/v36 \
   --model_path Qwen/Qwen2-1.5B \
   --dataset_path bigcode/starcoderdata \
   --dataset_revision 9fc30b578cedaec69e47302df72cf00feed7c8c4 \

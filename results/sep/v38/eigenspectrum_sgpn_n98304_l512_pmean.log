@@ -1,0 +1,510 @@
+Run started: 2025-12-30T10:53:41.042346
+Arguments: Namespace(source='gpn', n_samples=[8192, 16384, 65536, 98304], seq_len=512, pooling_method='mean', model_path='songlab/gpn-brassicales', model_subfolder='', model_revision='eb9c35d0d18571abe84390d22e74f2b21d319ce3', seed=42, batch_size=4096, device='cuda', dtype=torch.float32, output_dir='results/sep/v38', force=False, species_filter=None, species_filter_file='/tmp/gpn_plant_species_filter.txt', species_column='assembly', split='train', dataset_path='plantcad/Angiosperm_65_genomes_8192bp', dataset_config=None, dataset_revision='4a444fff5520b992aa978d92a5af509a81977098', text_column='seq', tokenization_mode='strict', dataset_sample_size=None, dataset_shuffle=False, dataset_dir=None)
+
+============================================================
+Eigenspectrum Analysis of DNA Sequences
+============================================================
+Parameters:
+  - Source: gpn
+  - Sample sizes: [8192, 16384, 65536, 98304]
+  - Sequence length: 512 bp
+  - Feature dimension: model hidden size
+  - Pooling method: mean
+
+Reading species list from: /tmp/gpn_plant_species_filter.txt
+  Loaded 3 species names (3 unique)
+Loading dataset from HuggingFace (path=plantcad/Angiosperm_65_genomes_8192bp, revision=4a444fff5520b992aa978d92a5af509a81977098, split=train)...
+Resolving data files:   0%|          | 0/45 [00:00<?, ?it/s]Resolving data files:  22%|##2       | 10/45 [00:00<00:00, 90.45it/s]Resolving data files: 100%|##########| 45/45 [00:00<00:00, 406.44it/s]
+Loading dataset shards:   0%|          | 0/44 [00:00<?, ?it/s]Loading dataset shards: 100%|##########| 44/44 [00:00<00:00, 6549.88it/s]
+Dataset size: 2,638,656 records
+
+Filtering data to 3 species:
+  Athaliana, Crubella, Esalsugineum
+  Records before filtering: 2,638,656
+  Records after filtering: 107,865
+
+Preparing sequences (cropping to 512 bp and filtering empty)...
+  Records before filtering: 107,865
+  Records after filtering: 107,865
+  Empty sequences filtered: 0
+Sampling 98304 records...
+Extracting records...
+  Unique species: 3
+Loading AutoModel from songlab/gpn-brassicales revision=eb9c35d0d18571abe84390d22e74f2b21d319ce3 with dtype=torch.float32...
+  Hidden size: 512
+  Parameters: 65,612,800 (65.6M)
+  Device: cuda, Dtype: torch.float32
+  Model:
+ConvNetModel(
+  (embedding): GPNEmbedding()
+  (encoder): Sequential(
+    (0): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same)
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (1): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(2,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (2): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(4,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (3): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(8,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (4): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(16,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (5): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(32,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (6): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same)
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (7): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(2,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (8): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(4,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (9): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(8,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (10): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(16,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (11): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(32,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (12): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same)
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (13): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(2,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (14): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(4,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (15): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(8,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (16): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(16,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (17): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(32,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (18): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same)
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (19): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(2,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (20): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(4,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (21): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(8,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (22): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(16,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (23): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same, dilation=(32,))
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (24): ConvLayer(
+      (conv): Sequential(
+        (0): TransposeLayer()
+        (1): Conv1d(512, 512, kernel_size=(9,), stride=(1,), padding=same)
+        (2): TransposeLayer()
+        (3): GELU(approximate='none')
+        (4): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+      (ffn): Sequential(
+        (0): Linear(in_features=512, out_features=512, bias=True)
+        (1): GELU(approximate='none')
+        (2): LayerNorm((512,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+  )
+)
+Extracting embeddings:   0%|          | 0/24 [00:00<?, ?it/s]Extracting embeddings:   4%|4         | 1/24 [00:03<01:15,  3.26s/it]Extracting embeddings:   8%|8         | 2/24 [00:06<01:08,  3.12s/it]Extracting embeddings:  12%|#2        | 3/24 [00:09<01:04,  3.08s/it]Extracting embeddings:  17%|#6        | 4/24 [00:12<01:02,  3.12s/it]Extracting embeddings:  21%|##        | 5/24 [00:15<00:58,  3.09s/it]Extracting embeddings:  25%|##5       | 6/24 [00:18<00:55,  3.07s/it]Extracting embeddings:  29%|##9       | 7/24 [00:21<00:51,  3.06s/it]Extracting embeddings:  33%|###3      | 8/24 [00:24<00:49,  3.09s/it]Extracting embeddings:  38%|###7      | 9/24 [00:27<00:46,  3.07s/it]Extracting embeddings:  42%|####1     | 10/24 [00:30<00:42,  3.07s/it]Extracting embeddings:  46%|####5     | 11/24 [00:33<00:39,  3.06s/it]Extracting embeddings:  50%|#####     | 12/24 [00:37<00:37,  3.09s/it]Extracting embeddings:  54%|#####4    | 13/24 [00:40<00:33,  3.07s/it]Extracting embeddings:  58%|#####8    | 14/24 [00:43<00:30,  3.07s/it]Extracting embeddings:  62%|######2   | 15/24 [00:46<00:27,  3.09s/it]Extracting embeddings:  67%|######6   | 16/24 [00:49<00:24,  3.08s/it]Extracting embeddings:  71%|#######   | 17/24 [00:52<00:21,  3.07s/it]Extracting embeddings:  75%|#######5  | 18/24 [00:55<00:18,  3.10s/it]Extracting embeddings:  79%|#######9  | 19/24 [00:58<00:15,  3.08s/it]Extracting embeddings:  83%|########3 | 20/24 [01:01<00:12,  3.07s/it]Extracting embeddings:  88%|########7 | 21/24 [01:04<00:09,  3.06s/it]Extracting embeddings:  92%|#########1| 22/24 [01:07<00:06,  3.10s/it]Extracting embeddings:  96%|#########5| 23/24 [01:10<00:03,  3.08s/it]Extracting embeddings: 100%|##########| 24/24 [01:13<00:00,  3.07s/it]Extracting embeddings: 100%|##########| 24/24 [01:13<00:00,  3.08s/it]
+  Embedding matrix shape: (98304, 512)
+
+Computing PCA for n_samples=8192...
+  Computed 512 eigenvalues
+  Top 10 eigenvalues: [730.6338   253.2879   128.85117  103.36276   72.37006   64.89916
+  54.802956  41.854626  33.19835   31.169577]
+  Variance explained by top 10: 79.14%
+
+Computing PCA for n_samples=16384...
+  Computed 512 eigenvalues
+  Top 10 eigenvalues: [723.8325   251.31718  129.16302  102.758545  74.36646   63.97687
+  55.864815  41.875324  32.596905  30.555836]
+  Variance explained by top 10: 78.75%
+
+Computing PCA for n_samples=65536...
+  Computed 512 eigenvalues
+  Top 10 eigenvalues: [723.9888   253.23062  129.25243  102.55448   74.395004  64.49118
+  55.28191   41.518158  32.90769   30.95467 ]
+  Variance explained by top 10: 78.56%
+
+Computing PCA for n_samples=98304...
+  Computed 512 eigenvalues
+  Top 10 eigenvalues: [724.40564  252.0091   129.33981  101.712906  74.31551   64.11035
+  55.33132   41.403183  32.849976  31.071278]
+  Variance explained by top 10: 78.54%
+
+Fitting full PCA for classification (n=98304)...
+
+Saving checkpoint to: results/sep/v38/eigenspectrum_sgpn_l512_n8192_16384_65536_98304_pmean.pkl
+
+For n=98304:
+  Components needed for 90% variance: 31
+  Components needed for 95% variance: 67
+  Effective sample size: 5.79131842
+  Condition number: 6.88294688e+04
+
+Figure saved to: results/sep/v38/eigenspectrum_sgpn_n98304_l512_pmean.png
+PDF saved to: results/sep/v38/eigenspectrum_sgpn_n98304_l512_pmean.pdf
+Eigenvalue data exported to: results/sep/v38/eigenspectrum_sgpn_n98304_l512_pmean.csv
+
+======================================================================
+PC SCALING ANALYSIS
+Testing n_components: [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512]
+======================================================================
+Extracting sequence features:   0%|          | 0/98304 [00:00<?, ?it/s]Extracting sequence features:   3%|3         | 3140/98304 [00:00<00:03, 31189.96it/s]Extracting sequence features:   7%|7         | 6899/98304 [00:00<00:02, 34897.54it/s]Extracting sequence features:  11%|#         | 10678/98304 [00:00<00:02, 36214.85it/s]Extracting sequence features:  15%|#4        | 14482/98304 [00:00<00:02, 36930.48it/s]Extracting sequence features:  19%|#8        | 18300/98304 [00:00<00:02, 37369.58it/s]Extracting sequence features:  22%|##2       | 22105/98304 [00:00<00:02, 37600.38it/s]Extracting sequence features:  26%|##6       | 25928/98304 [00:00<00:01, 37751.24it/s]Extracting sequence features:  30%|###       | 29776/98304 [00:00<00:01, 37981.64it/s]Extracting sequence features:  34%|###4      | 33599/98304 [00:00<00:01, 38057.32it/s]Extracting sequence features:  38%|###8      | 37429/98304 [00:01<00:01, 38131.50it/s]Extracting sequence features:  42%|####1     | 41243/98304 [00:01<00:01, 38095.43it/s]Extracting sequence features:  46%|####5     | 45064/98304 [00:01<00:01, 38123.08it/s]Extracting sequence features:  50%|####9     | 48883/98304 [00:01<00:01, 38142.68it/s]Extracting sequence features:  54%|#####3    | 52734/98304 [00:01<00:01, 38251.87it/s]Extracting sequence features:  58%|#####7    | 56560/98304 [00:01<00:01, 38244.30it/s]Extracting sequence features:  61%|######1   | 60385/98304 [00:01<00:00, 38228.61it/s]Extracting sequence features:  65%|######5   | 64208/98304 [00:01<00:00, 38190.76it/s]Extracting sequence features:  69%|######9   | 68037/98304 [00:01<00:00, 38184.68it/s]Extracting sequence features:  73%|#######3  | 71856/98304 [00:01<00:00, 38119.76it/s]Extracting sequence features:  77%|#######6  | 75683/98304 [00:02<00:00, 38153.03it/s]Extracting sequence features:  81%|########  | 79531/98304 [00:02<00:00, 38248.14it/s]Extracting sequence features:  85%|########4 | 83356/98304 [00:02<00:00, 38234.88it/s]Extracting sequence features:  89%|########8 | 87180/98304 [00:02<00:00, 38224.79it/s]Extracting sequence features:  93%|#########2| 91023/98304 [00:02<00:00, 38280.19it/s]Extracting sequence features:  96%|#########6| 94852/98304 [00:02<00:00, 38228.35it/s]Extracting sequence features: 100%|##########| 98304/98304 [00:02<00:00, 37904.65it/s]
+[species[0]] 3 classes, 98304 samples
+  Classes: Athaliana, Crubella, Esalsugineum
+  species              F1: 0.34 0.35 0.37 0.37 0.37 0.41 0.43 0.45 0.46 0.46 0.47 0.47
+[gc_content[0]] 5 classes, 98304 samples
+  Classes: 0.000-0.299, 0.299-0.342, 0.342-0.375, 0.375-0.408, 0.408-0.662
+  gc_content           F1: 0.19 0.48 0.58 0.60 0.60 0.78 0.82 0.83 0.83 0.83 0.83 0.83
+[repeat_fraction[0]] 1 classes, 98304 samples
+  Classes: 0.000-1.000
+  repeat_fraction      F1: 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00
+[kmer_entropy_1[0]] 5 classes, 98304 samples
+  Classes: 0.000-1.868, 1.868-1.911, 1.911-1.940, 1.940-1.963, 1.963-2.000
+  kmer_entropy_1       F1: 0.19 0.44 0.53 0.54 0.57 0.73 0.77 0.78 0.78 0.78 0.78 0.77
+[kmer_entropy_3[0]] 5 classes, 98304 samples
+  Classes: 0.000-5.464, 5.464-5.589, 5.589-5.673, 5.673-5.743, 5.743-5.931
+  kmer_entropy_3       F1: 0.20 0.38 0.47 0.48 0.50 0.64 0.69 0.69 0.70 0.70 0.70 0.69
+[kmer_entropy_9[0]] 5 classes, 98304 samples
+  Classes: 0.000-8.930, 8.930-8.957, 8.957-8.969, 8.969-8.973, 8.973-8.977
+  kmer_entropy_9       F1: 0.10 0.22 0.25 0.28 0.29 0.30 0.33 0.35 0.36 0.36 0.36 0.36
+[dinuc_CG[0]] 5 classes, 98304 samples
+  Classes: 0.000-0.014, 0.014-0.018, 0.018-0.023, 0.023-0.033, 0.033-0.131
+  dinuc_CG             F1: 0.14 0.26 0.30 0.35 0.35 0.45 0.54 0.57 0.57 0.58 0.58 0.58
+[dinuc_GC[0]] 5 classes, 98304 samples
+  Classes: 0.000-0.018, 0.018-0.025, 0.025-0.031, 0.031-0.039, 0.039-0.110
+  dinuc_GC             F1: 0.14 0.32 0.39 0.40 0.40 0.45 0.48 0.49 0.51 0.52 0.52 0.52
+[dinuc_AT[0]] 5 classes, 98304 samples
+  Classes: 0.000-0.072, 0.072-0.084, 0.084-0.098, 0.098-0.114, 0.114-0.231
+  dinuc_AT             F1: 0.15 0.37 0.43 0.45 0.45 0.51 0.53 0.58 0.62 0.62 0.62 0.62
+[dinuc_TA[0]] 5 classes, 98304 samples
+  Classes: 0.000-0.055, 0.055-0.068, 0.068-0.082, 0.082-0.102, 0.102-0.323
+  dinuc_TA             F1: 0.19 0.42 0.49 0.52 0.53 0.58 0.60 0.63 0.65 0.66 0.66 0.66
+[dinuc_AA[0]] 5 classes, 98304 samples
+  Classes: 0.000-0.084, 0.084-0.104, 0.104-0.123, 0.123-0.149, 0.149-0.380
+  dinuc_AA             F1: 0.19 0.26 0.36 0.37 0.53 0.59 0.63 0.67 0.67 0.67 0.67 0.67
+[dinuc_TT[0]] 5 classes, 98304 samples
+  Classes: 0.000-0.088, 0.088-0.110, 0.110-0.129, 0.129-0.151, 0.151-0.382
+  dinuc_TT             F1: 0.19 0.26 0.31 0.34 0.53 0.62 0.65 0.67 0.69 0.69 0.69 0.69
+
+PC scaling curves saved to: results/sep/v38/pc_scaling_curves.png
+PC scaling curves PDF saved to: results/sep/v38/pc_scaling_curves.pdf
+PC scaling data exported to: results/sep/v38/pc_scaling_curves.csv
+
+======================================================================
+SUMMARY: F1 by n_components
+======================================================================
+Target                     0       1       2       3       4       8      16      32      64     128     256     512
+--------------------------------------------------------------------------------------------------------------------
+dinuc_AA               0.193   0.257   0.356   0.366   0.535   0.589   0.631   0.666   0.672   0.673   0.674   0.674
+dinuc_AT               0.151   0.367   0.435   0.452   0.454   0.511   0.532   0.582   0.616   0.621   0.621   0.624
+dinuc_CG               0.139   0.256   0.297   0.351   0.352   0.452   0.542   0.569   0.573   0.577   0.577   0.581
+dinuc_GC               0.141   0.321   0.389   0.402   0.404   0.451   0.479   0.494   0.507   0.520   0.524   0.522
+dinuc_TA               0.190   0.420   0.486   0.521   0.525   0.578   0.599   0.628   0.655   0.659   0.662   0.662
+dinuc_TT               0.187   0.258   0.308   0.338   0.527   0.617   0.653   0.673   0.687   0.686   0.687   0.686
+gc_content             0.194   0.480   0.581   0.596   0.604   0.784   0.816   0.830   0.828   0.831   0.829   0.829
+kmer_entropy_1         0.194   0.437   0.531   0.540   0.567   0.728   0.773   0.775   0.779   0.778   0.776   0.773
+kmer_entropy_3         0.199   0.382   0.473   0.484   0.505   0.637   0.689   0.692   0.695   0.695   0.697   0.693
+kmer_entropy_9         0.096   0.216   0.249   0.284   0.289   0.305   0.333   0.347   0.356   0.362   0.365   0.361
+repeat_fraction        1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000
+species                0.335   0.353   0.370   0.373   0.372   0.406   0.430   0.448   0.460   0.462   0.469   0.470
+
+Training species classifier with n_components=512 PCs...
+[Species] 3 classes, 98304 samples
+  Classes: Athaliana, Crubella, Esalsugineum
+
+[Species] n_classes=3, acc=0.471, f1=0.470
+Confusion matrix saved to: results/sep/v38/eigenspectrum_sgpn_n98304_l512_pmean_confusion_matrix.png
+Confusion matrix PDF saved to: results/sep/v38/eigenspectrum_sgpn_n98304_l512_pmean_confusion_matrix.pdf
+Confusion matrix data exported to: results/sep/v38/eigenspectrum_sgpn_n98304_l512_pmean_confusion_matrix.csv
+Classification metrics exported to: results/sep/v38/eigenspectrum_sgpn_n98304_l512_pmean_confusion_matrix_metrics.csv
+
+Run completed: 2025-12-30T10:57:49.297219
+
+Done!
