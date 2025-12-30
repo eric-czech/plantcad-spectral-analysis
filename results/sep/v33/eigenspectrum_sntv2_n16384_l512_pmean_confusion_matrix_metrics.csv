@@ -1,0 +1,67 @@
+species,correct,total,accuracy
+_OVERALL_,271,3277,0.08269758925846811
+Acipenser ruthenus,22,76,0.2894736842105263
+Acropora millepora,8,50,0.16
+Anguilla rostrata,0,47,0.0
+Astatotilapia calliptera,1,52,0.019230769230769232
+Astyanax mexicanus,5,53,0.09433962264150944
+Biomphalaria glabrata,8,48,0.16666666666666666
+Brienomyrus brachyistius,1,56,0.017857142857142856
+Bubalus bubalis,2,49,0.04081632653061224
+Callithrix jacchus,2,54,0.037037037037037035
+Carassius gibelio,19,80,0.2375
+Cavia porcellus,0,42,0.0
+Cervus canadensis,1,48,0.020833333333333332
+Choloepus didactylus,1,49,0.02040816326530612
+Clarias gariepinus,0,42,0.0
+Clupea harengus,1,49,0.02040816326530612
+Conger conger,1,44,0.022727272727272728
+Crassostrea virginica,3,53,0.05660377358490566
+Ctenopharyngodon idella,3,54,0.05555555555555555
+Dasypus novemcinctus,2,46,0.043478260869565216
+Dreissena polymorpha,12,68,0.17647058823529413
+Elephas maximus indicus,0,46,0.0
+Engraulis encrasicolus,0,47,0.0
+Esox lucius,1,50,0.02
+Fundulus heteroclitus,1,49,0.02040816326530612
+Gambusia affinis,1,44,0.022727272727272728
+Girardinichthys multiradiatus,0,42,0.0
+Gopherus evgoodei,3,40,0.075
+Haliotis rufescens,11,57,0.19298245614035087
+Hemicordylus capensis,14,59,0.23728813559322035
+Hippopotamus amphibius kiboko,1,46,0.021739130434782608
+Homo sapiens,3,52,0.057692307692307696
+Hoplias malabaricus,1,47,0.02127659574468085
+Ictalurus furcatus,0,42,0.0
+Larimichthys crocea,3,40,0.075
+Lates calcarifer,1,48,0.020833333333333332
+Lingula anatina,2,50,0.04
+Lutra lutra,3,45,0.06666666666666667
+Macaca fascicularis,4,51,0.0784313725490196
+Manis pentadactyla,3,50,0.06
+Mauremys reevesii,9,55,0.16363636363636364
+Melanotaenia boesemani,1,46,0.021739130434782608
+Mercenaria mercenaria,14,73,0.1917808219178082
+Micropterus dolomieu,1,45,0.022222222222222223
+Monodelphis domestica,5,45,0.1111111111111111
+Mus musculus,8,58,0.13793103448275862
+Mya arenaria,12,71,0.16901408450704225
+Mytilus trossulus,15,60,0.25
+Necator americanus,21,52,0.40384615384615385
+Neoarius graeffei,0,48,0.0
+Nycticebus coucang,0,48,0.0
+Pangasianodon hypophthalmus,1,46,0.021739130434782608
+Panthera leo,1,39,0.02564102564102564
+Pimephales promelas,1,41,0.024390243902439025
+Pocillopora verrucosa,3,38,0.07894736842105263
+Pygocentrus nattereri,1,50,0.02
+Rhineura floridana,3,47,0.06382978723404255
+Salvelinus sp. IW2-2015,3,49,0.061224489795918366
+Scleropages formosus,4,48,0.08333333333333333
+Sebastes umbrosus,4,47,0.0851063829787234
+Siniperca chuatsi,0,44,0.0
+Strongylocentrotus purpuratus,4,44,0.09090909090909091
+Symphalangus syndactylus,6,59,0.1016949152542373
+Triplophysa dalaica,1,43,0.023255813953488372
+Xyrauchen texanus,9,67,0.13432835820895522
+Zalophus californianus,0,49,0.0

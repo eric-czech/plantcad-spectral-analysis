@@ -8,6 +8,7 @@ This script:
    - "sequence": one-hot encoding (5 channels: A, C, G, T, N)
    - "plantcad": hidden states from PlantCAD2 model (forward direction, pooled via single_token/mean/max)
    - "marin": hidden states from Marin model (pooled via single_token/mean/max)
+   - "ntv2": hidden states from Nucleotide Transformer v2 model (pooled via single_token/mean/max)
 4. Centers the data and runs PCA for each sample size
 5. Saves aggregated results to disk (checkpointing to avoid recomputation)
 6. Plots the eigenspectrum colored by sample size
@@ -88,6 +89,7 @@ DINUCLEOTIDES = ['CG', 'GC', 'AT', 'TA', 'AA', 'TT']
 # Default model paths
 PLANTCAD_MODEL_PATH = "kuleshov-group/PlantCAD2-Small-l24-d0768"
 MARIN_MODEL_PATH = "plantcad/marin_exp1729__pcv1_600m_c512__checkpoints"
+NTV2_MODEL_PATH = "InstaDeepAI/nucleotide-transformer-2.5b-multi-species"
 DEFAULT_DTYPE = torch.bfloat16
 
 # Default dataset
@@ -100,7 +102,7 @@ UNKNOWN_SPECIES = "UNKNOWN"
 # Type aliases
 PoolingMethod = Literal["single_token", "mean", "max"]
 TokenizationMode = Literal["strict", "lenient"]
-FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand"]
+FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand", "ntv2", "ntv2_rand"]
 
 
 # =============================================================================
@@ -289,6 +291,7 @@ def _load_model_and_tokenizer(
     dtype: torch.dtype,
     random_init: bool,
     subfolder: str,
+    revision: str | None,
 ) -> tuple:
     """Shared helper to load a model and tokenizer.
     
@@ -299,18 +302,20 @@ def _load_model_and_tokenizer(
         dtype: Data type for model weights
         random_init: If True, use random weights (architecture from config only)
         subfolder: Optional subfolder within model_path
+        revision: Optional git revision/commit hash for the model
     """
     class_name = model_class.__name__
     init_str = " (random init)" if random_init else ""
     sub_str = f" subfolder={subfolder}" if subfolder else ""
-    print(f"Loading {class_name} from {model_path}{sub_str}{init_str} with {dtype=}...")
+    rev_str = f" revision={revision}" if revision else ""
+    print(f"Loading {class_name} from {model_path}{sub_str}{rev_str}{init_str} with {dtype=}...")
     
     tokenizer = AutoTokenizer.from_pretrained(
-        model_path, subfolder=subfolder, trust_remote_code=True
+        model_path, subfolder=subfolder, revision=revision, trust_remote_code=True
     )
     if random_init:
         config = AutoConfig.from_pretrained(
-            model_path, subfolder=subfolder, trust_remote_code=True
+            model_path, subfolder=subfolder, revision=revision, trust_remote_code=True
         )
         model = model_class.from_config(config, torch_dtype=dtype, trust_remote_code=True)
         model = model.to(device, dtype=dtype)
@@ -318,6 +323,7 @@ def _load_model_and_tokenizer(
         model = model_class.from_pretrained(
             model_path,
             subfolder=subfolder,
+            revision=revision,
             torch_dtype=dtype,
             trust_remote_code=True,
         ).to(device, dtype=dtype)
@@ -340,12 +346,19 @@ def load_plantcad_model(
     device: str,
     dtype: torch.dtype,
     random_init: bool,
+    revision: str | None,
 ) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
     """Load PlantCAD model and tokenizer."""
     if model_path is None:
         model_path = PLANTCAD_MODEL_PATH
     return _load_model_and_tokenizer(
-        model_path, AutoModelForMaskedLM, device, dtype, random_init, subfolder
+        model_path=model_path,
+        model_class=AutoModelForMaskedLM,
+        device=device,
+        dtype=dtype,
+        random_init=random_init,
+        subfolder=subfolder,
+        revision=revision,
     )
 
 
@@ -355,12 +368,43 @@ def load_marin_model(
     device: str,
     dtype: torch.dtype,
     random_init: bool,
+    revision: str | None,
 ) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
     """Load Marin model and tokenizer."""
     if model_path is None:
         model_path = MARIN_MODEL_PATH
     return _load_model_and_tokenizer(
-        model_path, AutoModelForCausalLM, device, dtype, random_init, subfolder
+        model_path=model_path,
+        model_class=AutoModelForCausalLM,
+        device=device,
+        dtype=dtype,
+        random_init=random_init,
+        subfolder=subfolder,
+        revision=revision,
+    )
+
+
+def load_ntv2_model(
+    model_path: str | None,
+    subfolder: str,
+    device: str,
+    dtype: torch.dtype,
+    random_init: bool,
+    revision: str | None,
+) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
+    """Load Nucleotide Transformer v2 model and tokenizer."""
+    if model_path is None:
+        model_path = NTV2_MODEL_PATH
+    if dtype != torch.float32:
+        raise ValueError("NTv2 model only supports float32 dtype")
+    return _load_model_and_tokenizer(
+        model_path=model_path,
+        model_class=AutoModelForMaskedLM,
+        device=device,
+        dtype=dtype,
+        random_init=random_init,
+        subfolder=subfolder,
+        revision=revision,
     )
 
 
@@ -369,6 +413,7 @@ def tokenize_sequences(
     tokenizer: AutoTokenizer,
     sequence_length: int,
     mode: TokenizationMode,
+    source: FeatureSource,
 ) -> torch.Tensor:
     """Tokenize DNA sequences with validation.
     
@@ -379,6 +424,7 @@ def tokenize_sequences(
         mode: Tokenization mode
             - "strict": No padding/truncation, validate sequences are exact length
             - "lenient": Pad/truncate to sequence_length
+        source: Feature source
             
     Returns:
         torch.Tensor of input_ids with shape (len(sequences), sequence_length)
@@ -386,6 +432,17 @@ def tokenize_sequences(
     Raises:
         ValueError: If mode is invalid or validation fails
     """
+    expected_length = sequence_length
+    if source.startswith("ntv2"):
+        # NTv2 tokenizer uses 6-mers for most tokens, so divide input length by 6
+        # to get approximate target sequence length; see:
+        # https://huggingface.co/InstaDeepAI/nucleotide-transformer-v2-50m-multi-species#preprocessing
+        expected_length = sequence_length // 6
+        if expected_length < 1:
+            raise ValueError(f"Sequence length {sequence_length} is too short for NTv2 tokenizer")
+        # NTv2 tokenizer expects uppercase sequences
+        sequences = [seq.upper() for seq in sequences]
+
     # Tokenize based on mode
     if mode == "strict":
         # Tokenize w/o padding or truncation;
@@ -395,7 +452,7 @@ def tokenize_sequences(
         # Tokenize with padding and truncation to target length
         inputs = tokenizer(
             sequences,
-            max_length=sequence_length,
+            max_length=expected_length,
             truncation=True,
             padding="max_length",
             return_length=True
@@ -405,13 +462,13 @@ def tokenize_sequences(
     
     # Validate that all sequences have expected length
     for idx, length in enumerate(inputs["length"]):
-        if length != sequence_length:
+        if length != expected_length:
             example_seq = sequences[idx]
-            status = "too long" if length > sequence_length else "too short"
+            status = "too long" if length > expected_length else "too short"
             raise ValueError(
                 f"Tokenization validation failed in {mode} mode: "
                 f"Sequence at batch position {idx} is {status} "
-                f"(expected {sequence_length} tokens, got {length} tokens). "
+                f"(expected {expected_length} tokens, got {length} tokens). "
                 f"Example sequence (first 100 chars): {example_seq[:100]}"
             )
     
@@ -476,7 +533,13 @@ def extract_model_embeddings(
         batch_size_actual = len(batch_seqs)
         
         # Tokenize batch with validation
-        input_ids_list = tokenize_sequences(batch_seqs, tokenizer, sequence_length, tokenization_mode)
+        input_ids_list = tokenize_sequences(
+            sequences=batch_seqs,
+            tokenizer=tokenizer,
+            sequence_length=sequence_length,
+            mode=tokenization_mode,
+            source=source,
+        )
         input_ids = torch.tensor(input_ids_list, dtype=torch.long, device=device)
         
         with torch.inference_mode():
@@ -704,32 +767,18 @@ def prepare_sequences(dataset, seq_len: int, text_column: str):
 
 def load_raw_data(
     n_samples: int,
-    seq_len: int,
-    seed: int,
     species_filter: set[str] | None,
-    split: str,
-    dataset_path: str,
-    dataset_config: str,
-    dataset_revision: str,
-    text_column: str,
-    dataset_sample_size: int,
-    species_column: str,
+    args: argparse.Namespace,
+    shuffle_buffer_size: int = 100,
 ) -> tuple[list[str], list[str]]:
     """
     Load and sample raw sequences from the dataset.
     
     Args:
         n_samples: Number of samples to draw (should be max of all sample sizes)
-        seq_len: Length to crop sequences to
-        seed: Random seed for reproducibility
         species_filter: Optional set of species names (assemblies) to filter to before sampling
-        split: Dataset split to use ("train", "validation", or "test")
-        dataset_path: HuggingFace dataset path
-        dataset_config: Optional dataset configuration name
-        dataset_revision: Git revision/commit hash for the dataset
-        text_column: Name of the column containing text/sequences
-        dataset_sample_size: If provided, use streaming and take only this many records
-        species_column: Name of the column containing species/assembly identifiers
+        args: Command-line arguments containing dataset configuration
+        shuffle_buffer_size: Buffer size for shuffle when streaming (default: 100)
         
     Returns:
         Tuple of (sequences, species_labels) where species_labels are from the
@@ -738,27 +787,36 @@ def load_raw_data(
     Raises:
         ValueError: If not enough non-empty sequences are available
     """
-    dataset_config_msg = f" (config: {dataset_config})" if dataset_config else ""
+    dataset_config_msg = f" (config: {args.dataset_config})" if args.dataset_config else ""
     
-    if dataset_sample_size is not None:
-        print(f"Loading dataset from HuggingFace with streaming (path={dataset_path}{dataset_config_msg}, revision={dataset_revision}, split={split})...")
-        print(f"  Taking first {dataset_sample_size:,} records from stream...")
-        dataset_stream = load_dataset(dataset_path, dataset_config, split=split, revision=dataset_revision, streaming=True)
+    if args.dataset_sample_size is not None:
+        print(f"Loading dataset from HuggingFace with streaming (path={args.dataset_path}{dataset_config_msg}, revision={args.dataset_revision}, split={args.split})...")
+        print(f"  Taking first {args.dataset_sample_size:,} records from stream...")
+        dataset_stream = load_dataset(args.dataset_path, args.dataset_config, split=args.split, revision=args.dataset_revision, streaming=True, trust_remote_code=True)
+
+        if args.dataset_shuffle:
+            print(f"  Shuffling stream with buffer_size={shuffle_buffer_size}, seed={args.seed}...")
+            dataset_stream = dataset_stream.shuffle(seed=args.seed, buffer_size=shuffle_buffer_size)
+        
         # Materialize the first dataset_sample_size records into a normal dataset
-        dataset = Dataset.from_generator(lambda: iter(dataset_stream.take(dataset_sample_size)))
+        dataset = Dataset.from_generator(lambda: iter(dataset_stream.take(args.dataset_sample_size)))
         print(f"  Materialized {len(dataset):,} records from stream")
     else:
-        print(f"Loading dataset from HuggingFace (path={dataset_path}{dataset_config_msg}, revision={dataset_revision}, split={split})...")
-        dataset = load_dataset(dataset_path, dataset_config, split=split, revision=dataset_revision)
+        print(f"Loading dataset from HuggingFace (path={args.dataset_path}{dataset_config_msg}, revision={args.dataset_revision}, split={args.split})...")
+        dataset = load_dataset(args.dataset_path, args.dataset_config, split=args.split, revision=args.dataset_revision, trust_remote_code=True)
+        
+        if args.dataset_shuffle:
+            print(f"  Shuffling dataset with seed={args.seed}...")
+            dataset = dataset.shuffle(seed=args.seed)
     
     print(f"Dataset size: {len(dataset):,} records")
     
     # Filter by species if requested
     if species_filter is not None:
-        dataset = filter_species_data(dataset, species_filter, species_column)
+        dataset = filter_species_data(dataset, species_filter, args.species_column)
     
     # Crop sequences and filter out empty ones
-    dataset = prepare_sequences(dataset, seq_len, text_column)
+    dataset = prepare_sequences(dataset, args.seq_len, args.text_column)
     
     # Check if we have enough samples
     if n_samples > len(dataset):
@@ -777,14 +835,14 @@ def load_raw_data(
     print(f"Sampling {n_samples} records...")
     
     # Shuffle and select samples
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(args.seed)
     indices = rng.choice(len(dataset), size=n_samples, replace=False)
     
     # Extract records (keeping sequence and species together)
     print("Extracting records...")
     records = [dataset[int(idx)] for idx in indices]
-    sequences = [r[text_column] for r in records]
-    species = [r.get(species_column, UNKNOWN_SPECIES) for r in records]
+    sequences = [r[args.text_column] for r in records]
+    species = [r.get(args.species_column, UNKNOWN_SPECIES) for r in records]
     
     print(f"  Unique species: {len(set(species))}")
     
@@ -793,66 +851,63 @@ def load_raw_data(
 
 def convert_to_features(
     sequences: list[str],
-    source: FeatureSource,
-    seq_len: int,
-    batch_size: int,
-    device: str,
-    pooling_method: PoolingMethod,
-    model_path: str | None,
-    model_subfolder: str,
-    tokenization_mode: TokenizationMode,
+    args: argparse.Namespace,
 ) -> np.ndarray:
     """
     Convert raw sequences to feature matrix.
     
     Args:
         sequences: List of DNA sequences
-        source: "sequence" for one-hot encoding, "plantcad"/"plantcad_rand" for PlantCAD,
-                "marin"/"marin_rand" for Marin model embeddings
-        seq_len: Sequence length
-        batch_size: Batch size for model inference
-        device: Device for model inference
-        pooling_method: Pooling method for model embeddings
-        model_path: Custom model path (overrides default for plantcad/marin sources)
-        model_subfolder: Custom model subfolder (overrides default for plantcad/marin sources)
-        tokenization_mode: "strict" or "lenient" for tokenization behavior
+        args: Command-line arguments containing model and inference configuration
         
     Returns:
         Feature matrix of shape (n_samples, n_features)
     """
-    if source == "sequence":
-        return extract_onehot_features(sequences, seq_len)
-    elif source in ("plantcad", "plantcad_rand"):
-        random_init = source == "plantcad_rand"
+    if args.source == "sequence":
+        return extract_onehot_features(sequences, args.seq_len)
+    elif args.source in ("plantcad", "plantcad_rand"):
+        random_init = args.source == "plantcad_rand"
         model, tokenizer = load_plantcad_model(
-            model_path=model_path,
-            subfolder=model_subfolder,
-            device=device,
-            dtype=DEFAULT_DTYPE,
+            model_path=args.model_path,
+            subfolder=args.model_subfolder,
+            device=args.device,
+            dtype=args.dtype,
             random_init=random_init,
+            revision=args.model_revision,
         )
-    elif source in ("marin", "marin_rand"):
-        random_init = source == "marin_rand"
+    elif args.source in ("marin", "marin_rand"):
+        random_init = args.source == "marin_rand"
         model, tokenizer = load_marin_model(
-            model_path=model_path,
-            subfolder=model_subfolder,
-            device=device,
-            dtype=DEFAULT_DTYPE,
+            model_path=args.model_path,
+            subfolder=args.model_subfolder,
+            device=args.device,
+            dtype=args.dtype,
             random_init=random_init,
+            revision=args.model_revision,
+        )
+    elif args.source in ("ntv2", "ntv2_rand"):
+        random_init = args.source == "ntv2_rand"
+        model, tokenizer = load_ntv2_model(
+            model_path=args.model_path,
+            subfolder=args.model_subfolder,
+            device=args.device,
+            dtype=args.dtype,
+            random_init=random_init,
+            revision=args.model_revision,
         )
     else:
-        raise ValueError(f"Unknown source: {source}")
+        raise ValueError(f"Unknown source: {args.source}")
     
     data_matrix = extract_model_embeddings(
         sequences=sequences,
         model=model,
         tokenizer=tokenizer,
-        source=source,
-        batch_size=batch_size,
-        device=device,
-        pooling_method=pooling_method,
-        tokenization_mode=tokenization_mode,
-        sequence_length=seq_len,
+        source=args.source,
+        batch_size=args.batch_size,
+        device=args.device,
+        pooling_method=args.pooling_method,
+        tokenization_mode=args.tokenization_mode,
+        sequence_length=args.seq_len,
     )
     print(f"  Embedding matrix shape: {data_matrix.shape}")
     del model
@@ -933,29 +988,14 @@ def run_analysis(
     # Load raw data for max sample size (with optional species filtering)
     sequences, species = load_raw_data(
         n_samples=max_samples,
-        seq_len=args.seq_len,
-        seed=args.seed,
         species_filter=species_filter_set,
-        split=args.split,
-        dataset_path=args.dataset_path,
-        dataset_config=args.dataset_config,
-        dataset_revision=args.dataset_revision,
-        text_column=args.text_column,
-        dataset_sample_size=args.dataset_sample_size,
-        species_column=args.species_column,
+        args=args,
     )
     
     # Convert to features
     data_matrix = convert_to_features(
         sequences=sequences,
-        source=args.source,
-        seq_len=args.seq_len,
-        batch_size=args.batch_size,
-        device=args.device,
-        pooling_method=args.pooling_method,
-        model_path=args.model_path,
-        model_subfolder=args.model_subfolder,
-        tokenization_mode=args.tokenization_mode,
+        args=args,
     )
     
     # Run PCA for each sample size (ascending order)
@@ -987,6 +1027,8 @@ SOURCE_ABBREVS = {
     "plantcad_rand": "pcadrand",
     "marin": "marin",
     "marin_rand": "marinrand",
+    "ntv2": "ntv2",
+    "ntv2_rand": "ntv2rand",
 }
 MODEL_SOURCES = [s for s in SOURCE_ABBREVS if s != "sequence"]
 
@@ -1719,19 +1761,22 @@ def train_species_classifier(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Eigenspectrum analysis of DNA sequences")
     parser.add_argument("--source", type=str, choices=list(SOURCE_ABBREVS.keys()), default="sequence",
-                        help="Feature source: 'sequence' for one-hot, 'plantcad'/'marin' for pretrained, '*_rand' for random init")
+                        help="Feature source: 'sequence' for one-hot, 'plantcad'/'marin'/'ntv2' for pretrained, '*_rand' for random init")
     parser.add_argument("--n_samples", type=int, nargs='+', default=[500, 1000, 2000, 5000],
                         help="List of sample sizes to analyze (PCA computed for each)")
     parser.add_argument("--seq_len", type=int, default=4096, help="Sequence length to crop to")
     parser.add_argument("--pooling_method", type=str, choices=["single_token", "mean", "max"], default="mean",
                         help="Pooling method: 'single_token' (center for MaskedLM, last for CausalLM), 'mean', or 'max'")
     parser.add_argument("--model_path", type=str, default=None,
-                        help=f"Model path (default: {PLANTCAD_MODEL_PATH} for plantcad, {MARIN_MODEL_PATH} for marin)")
+                        help=f"Model path (default: {PLANTCAD_MODEL_PATH} for plantcad, {MARIN_MODEL_PATH} for marin, {NTV2_MODEL_PATH} for ntv2)")
     parser.add_argument("--model_subfolder", type=str, default="",
                         help="Subfolder within model path (default: empty string)")
+    parser.add_argument("--model_revision", type=str, default=None,
+                        help="Model git revision/commit hash (default: None)")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size for model inference")
     parser.add_argument("--device", type=str, default="cuda", help="Device for model inference")
+    parser.add_argument("--dtype", type=str, default="bfloat16", help="Model dtype (e.g., bfloat16, float16, float32)")
     parser.add_argument("--output_dir", type=str, default=".", help="Output directory")
     parser.add_argument("--force", action="store_true", help="Force recomputation even if checkpoint exists")
     parser.add_argument("--species_filter", type=str, default=None, help="Filter data to a single species (assembly name). Default: None (no filtering)")
@@ -1752,6 +1797,8 @@ def parse_args() -> argparse.Namespace:
                         help="Tokenization mode: 'strict' (no padding/truncation, validate exact length) or 'lenient' (pad/truncate to target length). Default: strict")
     parser.add_argument("--dataset_sample_size", type=int, default=None,
                         help="Number of records to take from dataset using streaming. If None (default), load full dataset normally.")
+    parser.add_argument("--dataset_shuffle", action="store_true", default=False,
+                        help="Shuffle the dataset using the specified seed. Default: False")
     return parser.parse_args()
 
 
@@ -1791,6 +1838,10 @@ def main():
 
 def _run_main(args: argparse.Namespace, n_samples_list: list[int], basename: str):
     """Main logic wrapped for logging."""
+    # Convert dtype string to torch dtype
+    dtype = getattr(torch, args.dtype)
+    args.dtype = dtype
+    
     # Log run info
     print(f"Run started: {datetime.now().isoformat()}")
     print(f"Arguments: {args}")

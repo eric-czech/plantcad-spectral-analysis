@@ -1,4 +1,3 @@
-
 # PlantCAD Spectral Analysis Experiments
 
 Abbreviations: 
@@ -156,7 +155,8 @@ Species were mapped to this dataset in [eczech/gpn-animal-promoter-dataset](http
 curl -o /tmp/gpn_promoter_species_filter.txt https://gist.githubusercontent.com/eric-czech/c2e65ecee9d89c7dc479306ddc895585/raw/4b70e7a511231345569b4598378b7f3c6d3bdae0/species_filter_gpn_promoter.txt
 
 # Run on species subset:
-python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 8192 16384 32768 65536 \
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 8192 16384 32768 65536 \
   --device cuda --output_dir results/sep/v28 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
@@ -165,6 +165,66 @@ python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 409
   --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
   --model_subfolder checkpoints/gpn_promoter_pretrain_c512_v0.2 \
   --pooling_method mean --batch_size 512 --seq_len 512
+
+# Run on all species
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 8192 16384 32768 65536 \
+  --device cuda --output_dir results/sep/v31 \
+  --dataset_path eczech/gpn-animal-promoter-dataset \
+  --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
+  --species_column organism \
+  --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
+  --model_subfolder checkpoints/gpn_promoter_pretrain_c512_v0.2 \
+  --pooling_method mean --batch_size 512 --seq_len 512
+```
+
+NTv2 experiments:
+
+
+```bash
+# NTv2 + multi-species genomes
+python scripts/plantcad_eigenanalysis.py \
+  --source ntv2 --n_samples 4096 8192 16384 \
+  --device cuda --output_dir results/sep/v32 \
+  --model_path InstaDeepAI/nucleotide-transformer-v2-50m-multi-species \
+  --model_revision 81b29e5786726d891dbf929404ef20adca5b36f1 \
+  --dataset_path InstaDeepAI/multi_species_genomes \
+  --dataset_revision b7326579fa3528b5896f5f4aa1554ad69ad5f105 \
+  --dataset_config 12kbp \
+  --dataset_sample_size 16384 \
+  --dataset_shuffle \
+  --text_column sequence \
+  --dtype float32 --tokenization_mode lenient \
+  --split train \
+  --pooling_method mean --batch_size 16 --seq_len 8192
+
+# NTv2 + animal promoter dataset
+python scripts/plantcad_eigenanalysis.py \
+  --source ntv2 --n_samples 4096 8192 16384 \
+  --device cuda --output_dir results/sep/v33 \
+  --model_path InstaDeepAI/nucleotide-transformer-v2-50m-multi-species \
+  --model_revision 81b29e5786726d891dbf929404ef20adca5b36f1 \
+  --dataset_path eczech/gpn-animal-promoter-dataset \
+  --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
+  --species_column organism \
+  --species_filter_file /tmp/gpn_promoter_species_filter.txt \
+  --dtype float32 --tokenization_mode lenient \
+  --split train \
+  --pooling_method mean --batch_size 64 --seq_len 512
+
+# AgroNT + PlantCAD2 dataset; use 6144bp sequences for 1024 tokens, see:
+# https://huggingface.co/InstaDeepAI/agro-nucleotide-transformer-1b
+python scripts/plantcad_eigenanalysis.py \
+  --source ntv2 --n_samples 4096 8192 16384 \
+  --device cuda --output_dir results/sep/v34 \
+  --model_path InstaDeepAI/agro-nucleotide-transformer-1b \
+  --model_revision b0e1ea1f53a2bf5bb29f8eab7a7e553bf06c1ab1 \
+  --dataset_path plantcad/Angiosperm_65_genomes_8192bp \
+  --dataset_revision 4a444fff5520b992aa978d92a5af509a81977098 \
+  --dtype float32 --tokenization_mode lenient \
+  --split train \
+  --pooling_method mean --batch_size 8 --seq_len 6144
+
 ```
 
 ### Text
@@ -188,13 +248,25 @@ python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 409
 # Qwen2-1.5B + DCLM-Edu
 python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 8192 16384 \
   --device cuda --output_dir results/sep/v30 \
+  --model_path Qwen/Qwen2-1.5B \
   --dataset_path HuggingFaceTB/dclm-edu \
   --dataset_revision dbad8ad71224482740cd9c9d353591adbf62fe04 \
   --dataset_sample_size 262144 \
   --text_column text \
   --tokenization_mode lenient \
   --split train \
+  --pooling_method mean --batch_size 16 --seq_len 4096
+
+# Qwen2-1.5B + DCLM-Baseline (TODO: run)
+python scripts/plantcad_eigenanalysis.py --source marin --n_samples 512 1024 4096 8192 16384 \
+  --device cuda --output_dir results/sep/v?? \
   --model_path Qwen/Qwen2-1.5B \
+  --dataset_path mlfoundations/dclm-baseline-1.0 \
+  --dataset_revision a3b142c183aebe5af344955ae20836eb34dcf69b \
+  --dataset_sample_size 262144 \
+  --text_column text \
+  --tokenization_mode lenient \
+  --split train \
   --pooling_method mean --batch_size 16 --seq_len 4096
 
 ```
