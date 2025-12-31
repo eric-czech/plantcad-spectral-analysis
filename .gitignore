@@ -1,6 +1,7 @@
 # Directories to exclude
 wandb/
 checkpoints/
+local/
 
 # Pickle files
 *.pkl

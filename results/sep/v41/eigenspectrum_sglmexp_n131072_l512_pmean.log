@@ -1,0 +1,204 @@
+Run started: 2025-12-30T20:31:38.705365
+Arguments: Namespace(source='glmexp', n_samples=[16384, 32768, 131072], seq_len=512, pooling_method='mean', model_path=None, model_subfolder='', model_revision=None, seed=42, batch_size=1024, device='cuda', dtype=torch.bfloat16, output_dir='results/sep/v41', force=False, species_filter=None, species_filter_file='/tmp/species_filter_v41.txt', species_column='organism', split='train', dataset_path='eczech/gpn-animal-promoter-dataset', dataset_config=None, dataset_revision='f009db443a914d4113922e3028de0666b85c24d6', text_column='seq', tokenization_mode='strict', dataset_sample_size=None, dataset_shuffle=False, dataset_dir=None, min_samples_per_class=2)
+
+============================================================
+Eigenspectrum Analysis of DNA Sequences
+============================================================
+Parameters:
+  - Source: glmexp
+  - Sample sizes: [16384, 32768, 131072]
+  - Sequence length: 512 bp
+  - Feature dimension: model hidden size
+  - Pooling method: mean
+
+Reading species list from: /tmp/species_filter_v41.txt
+  Loaded 6 species names (6 unique)
+Loading dataset from HuggingFace (path=eczech/gpn-animal-promoter-dataset, revision=f009db443a914d4113922e3028de0666b85c24d6, split=train)...
+Dataset size: 9,038,354 records
+
+Filtering data to 6 species:
+  Caenorhabditis elegans, Callithrix jacchus, Drosophila melanogaster, Fundulus heteroclitus, Homo sapiens, Mus musculus
+  Records before filtering: 9,038,354
+  Records after filtering: 152,624
+
+Preparing sequences (cropping to 512 bp and filtering empty)...
+  Records before filtering: 152,624
+  Records after filtering: 152,624
+  Empty sequences filtered: 0
+Sampling 131072 records...
+Extracting records...
+  Unique species: 6
+Loading GLM-Experiments Lightning checkpoint from gonzalobenegas/dev-glm-experiments-logs...
+  Downloading checkpoint from HuggingFace...
+  Downloading config from HuggingFace...
+  Loading config...
+  Replacing scheduler/optimizer with dummies for inference...
+  Instantiating model from config...
+  Loading checkpoint weights...
+/work/10459/eczech/vista/repos/plantcad-spectral-analysis/scripts/plantcad_eigenanalysis.py:536: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  checkpoint = torch.load(checkpoint_path, map_location="cpu")
+  Hidden size: 1024
+  Parameters: 298,908,672 (298.9M)
+  Device: cuda, Dtype: torch.bfloat16
+  Loading tokenizer from gonzalobenegas/tokenizer-dna-mlm...
+  Tokenizer vocab size: 7
+Extracting embeddings:   0%|          | 0/128 [00:00<?, ?it/s]Extracting embeddings:   1%|          | 1/128 [00:01<03:33,  1.68s/it]Extracting embeddings:   2%|1         | 2/128 [00:03<03:14,  1.54s/it]Extracting embeddings:   2%|2         | 3/128 [00:04<03:07,  1.50s/it]Extracting embeddings:   3%|3         | 4/128 [00:06<03:03,  1.48s/it]Extracting embeddings:   4%|3         | 5/128 [00:07<03:00,  1.46s/it]Extracting embeddings:   5%|4         | 6/128 [00:08<02:57,  1.46s/it]Extracting embeddings:   5%|5         | 7/128 [00:10<02:55,  1.45s/it]Extracting embeddings:   6%|6         | 8/128 [00:11<02:53,  1.45s/it]Extracting embeddings:   7%|7         | 9/128 [00:13<02:52,  1.45s/it]Extracting embeddings:   8%|7         | 10/128 [00:14<02:50,  1.45s/it]Extracting embeddings:   9%|8         | 11/128 [00:16<02:49,  1.45s/it]Extracting embeddings:   9%|9         | 12/128 [00:17<02:47,  1.45s/it]Extracting embeddings:  10%|#         | 13/128 [00:19<02:46,  1.45s/it]Extracting embeddings:  11%|#         | 14/128 [00:20<02:44,  1.45s/it]Extracting embeddings:  12%|#1        | 15/128 [00:21<02:43,  1.45s/it]Extracting embeddings:  12%|#2        | 16/128 [00:23<02:41,  1.45s/it]Extracting embeddings:  13%|#3        | 17/128 [00:24<02:40,  1.45s/it]Extracting embeddings:  14%|#4        | 18/128 [00:26<02:38,  1.45s/it]Extracting embeddings:  15%|#4        | 19/128 [00:27<02:37,  1.45s/it]Extracting embeddings:  16%|#5        | 20/128 [00:29<02:40,  1.48s/it]Extracting embeddings:  16%|#6        | 21/128 [00:30<02:37,  1.47s/it]Extracting embeddings:  17%|#7        | 22/128 [00:32<02:35,  1.47s/it]Extracting embeddings:  18%|#7        | 23/128 [00:33<02:33,  1.46s/it]Extracting embeddings:  19%|#8        | 24/128 [00:35<02:31,  1.46s/it]Extracting embeddings:  20%|#9        | 25/128 [00:36<02:29,  1.45s/it]Extracting embeddings:  20%|##        | 26/128 [00:37<02:27,  1.45s/it]Extracting embeddings:  21%|##1       | 27/128 [00:39<02:26,  1.45s/it]Extracting embeddings:  22%|##1       | 28/128 [00:40<02:24,  1.45s/it]Extracting embeddings:  23%|##2       | 29/128 [00:42<02:23,  1.45s/it]Extracting embeddings:  23%|##3       | 30/128 [00:43<02:21,  1.45s/it]Extracting embeddings:  24%|##4       | 31/128 [00:45<02:20,  1.45s/it]Extracting embeddings:  25%|##5       | 32/128 [00:46<02:18,  1.45s/it]Extracting embeddings:  26%|##5       | 33/128 [00:48<02:17,  1.45s/it]Extracting embeddings:  27%|##6       | 34/128 [00:49<02:16,  1.45s/it]Extracting embeddings:  27%|##7       | 35/128 [00:50<02:14,  1.45s/it]Extracting embeddings:  28%|##8       | 36/128 [00:52<02:13,  1.45s/it]Extracting embeddings:  29%|##8       | 37/128 [00:53<02:11,  1.45s/it]Extracting embeddings:  30%|##9       | 38/128 [00:55<02:10,  1.45s/it]Extracting embeddings:  30%|###       | 39/128 [00:56<02:08,  1.45s/it]Extracting embeddings:  31%|###1      | 40/128 [00:58<02:07,  1.45s/it]Extracting embeddings:  32%|###2      | 41/128 [00:59<02:09,  1.49s/it]Extracting embeddings:  33%|###2      | 42/128 [01:01<02:06,  1.47s/it]Extracting embeddings:  34%|###3      | 43/128 [01:02<02:04,  1.47s/it]Extracting embeddings:  34%|###4      | 44/128 [01:04<02:02,  1.46s/it]Extracting embeddings:  35%|###5      | 45/128 [01:05<02:00,  1.46s/it]Extracting embeddings:  36%|###5      | 46/128 [01:07<01:59,  1.45s/it]Extracting embeddings:  37%|###6      | 47/128 [01:08<01:57,  1.45s/it]Extracting embeddings:  38%|###7      | 48/128 [01:09<01:56,  1.45s/it]Extracting embeddings:  38%|###8      | 49/128 [01:11<01:54,  1.45s/it]Extracting embeddings:  39%|###9      | 50/128 [01:12<01:53,  1.45s/it]Extracting embeddings:  40%|###9      | 51/128 [01:14<01:51,  1.45s/it]Extracting embeddings:  41%|####      | 52/128 [01:15<01:50,  1.45s/it]Extracting embeddings:  41%|####1     | 53/128 [01:17<01:48,  1.45s/it]Extracting embeddings:  42%|####2     | 54/128 [01:18<01:47,  1.45s/it]Extracting embeddings:  43%|####2     | 55/128 [01:20<01:45,  1.45s/it]Extracting embeddings:  44%|####3     | 56/128 [01:21<01:44,  1.45s/it]Extracting embeddings:  45%|####4     | 57/128 [01:22<01:42,  1.45s/it]Extracting embeddings:  45%|####5     | 58/128 [01:24<01:41,  1.45s/it]Extracting embeddings:  46%|####6     | 59/128 [01:25<01:39,  1.45s/it]Extracting embeddings:  47%|####6     | 60/128 [01:27<01:38,  1.45s/it]Extracting embeddings:  48%|####7     | 61/128 [01:28<01:37,  1.45s/it]Extracting embeddings:  48%|####8     | 62/128 [01:30<01:35,  1.45s/it]Extracting embeddings:  49%|####9     | 63/128 [01:31<01:36,  1.49s/it]Extracting embeddings:  50%|#####     | 64/128 [01:33<01:34,  1.47s/it]Extracting embeddings:  51%|#####     | 65/128 [01:34<01:32,  1.47s/it]Extracting embeddings:  52%|#####1    | 66/128 [01:36<01:30,  1.46s/it]Extracting embeddings:  52%|#####2    | 67/128 [01:37<01:28,  1.46s/it]Extracting embeddings:  53%|#####3    | 68/128 [01:38<01:27,  1.45s/it]Extracting embeddings:  54%|#####3    | 69/128 [01:40<01:25,  1.45s/it]Extracting embeddings:  55%|#####4    | 70/128 [01:41<01:24,  1.45s/it]Extracting embeddings:  55%|#####5    | 71/128 [01:43<01:22,  1.45s/it]Extracting embeddings:  56%|#####6    | 72/128 [01:44<01:21,  1.45s/it]Extracting embeddings:  57%|#####7    | 73/128 [01:46<01:19,  1.45s/it]Extracting embeddings:  58%|#####7    | 74/128 [01:47<01:18,  1.45s/it]Extracting embeddings:  59%|#####8    | 75/128 [01:49<01:16,  1.45s/it]Extracting embeddings:  59%|#####9    | 76/128 [01:50<01:15,  1.45s/it]Extracting embeddings:  60%|######    | 77/128 [01:52<01:13,  1.45s/it]Extracting embeddings:  61%|######    | 78/128 [01:53<01:12,  1.45s/it]Extracting embeddings:  62%|######1   | 79/128 [01:54<01:10,  1.45s/it]Extracting embeddings:  62%|######2   | 80/128 [01:56<01:09,  1.45s/it]Extracting embeddings:  63%|######3   | 81/128 [01:57<01:07,  1.45s/it]Extracting embeddings:  64%|######4   | 82/128 [01:59<01:06,  1.45s/it]Extracting embeddings:  65%|######4   | 83/128 [02:00<01:05,  1.45s/it]Extracting embeddings:  66%|######5   | 84/128 [02:02<01:03,  1.45s/it]Extracting embeddings:  66%|######6   | 85/128 [02:03<01:02,  1.45s/it]Extracting embeddings:  67%|######7   | 86/128 [02:05<01:02,  1.49s/it]Extracting embeddings:  68%|######7   | 87/128 [02:06<01:00,  1.48s/it]Extracting embeddings:  69%|######8   | 88/128 [02:08<00:58,  1.47s/it]Extracting embeddings:  70%|######9   | 89/128 [02:09<00:57,  1.46s/it]Extracting embeddings:  70%|#######   | 90/128 [02:10<00:55,  1.46s/it]Extracting embeddings:  71%|#######1  | 91/128 [02:12<00:53,  1.45s/it]Extracting embeddings:  72%|#######1  | 92/128 [02:13<00:52,  1.45s/it]Extracting embeddings:  73%|#######2  | 93/128 [02:15<00:50,  1.45s/it]Extracting embeddings:  73%|#######3  | 94/128 [02:16<00:49,  1.45s/it]Extracting embeddings:  74%|#######4  | 95/128 [02:18<00:47,  1.45s/it]Extracting embeddings:  75%|#######5  | 96/128 [02:19<00:46,  1.45s/it]Extracting embeddings:  76%|#######5  | 97/128 [02:21<00:44,  1.45s/it]Extracting embeddings:  77%|#######6  | 98/128 [02:22<00:43,  1.45s/it]Extracting embeddings:  77%|#######7  | 99/128 [02:23<00:42,  1.45s/it]Extracting embeddings:  78%|#######8  | 100/128 [02:25<00:40,  1.45s/it]Extracting embeddings:  79%|#######8  | 101/128 [02:26<00:39,  1.45s/it]Extracting embeddings:  80%|#######9  | 102/128 [02:28<00:37,  1.45s/it]Extracting embeddings:  80%|########  | 103/128 [02:29<00:36,  1.45s/it]Extracting embeddings:  81%|########1 | 104/128 [02:31<00:34,  1.45s/it]Extracting embeddings:  82%|########2 | 105/128 [02:32<00:33,  1.45s/it]Extracting embeddings:  83%|########2 | 106/128 [02:34<00:31,  1.45s/it]Extracting embeddings:  84%|########3 | 107/128 [02:35<00:30,  1.45s/it]Extracting embeddings:  84%|########4 | 108/128 [02:37<00:28,  1.45s/it]Extracting embeddings:  85%|########5 | 109/128 [02:38<00:28,  1.49s/it]Extracting embeddings:  86%|########5 | 110/128 [02:40<00:26,  1.48s/it]Extracting embeddings:  87%|########6 | 111/128 [02:41<00:24,  1.47s/it]Extracting embeddings:  88%|########7 | 112/128 [02:42<00:23,  1.46s/it]Extracting embeddings:  88%|########8 | 113/128 [02:44<00:21,  1.46s/it]Extracting embeddings:  89%|########9 | 114/128 [02:45<00:20,  1.46s/it]Extracting embeddings:  90%|########9 | 115/128 [02:47<00:18,  1.45s/it]Extracting embeddings:  91%|######### | 116/128 [02:48<00:17,  1.45s/it]Extracting embeddings:  91%|#########1| 117/128 [02:50<00:15,  1.45s/it]Extracting embeddings:  92%|#########2| 118/128 [02:51<00:14,  1.45s/it]Extracting embeddings:  93%|#########2| 119/128 [02:53<00:13,  1.45s/it]Extracting embeddings:  94%|#########3| 120/128 [02:54<00:11,  1.45s/it]Extracting embeddings:  95%|#########4| 121/128 [02:55<00:10,  1.45s/it]Extracting embeddings:  95%|#########5| 122/128 [02:57<00:08,  1.45s/it]Extracting embeddings:  96%|#########6| 123/128 [02:58<00:07,  1.45s/it]Extracting embeddings:  97%|#########6| 124/128 [03:00<00:05,  1.45s/it]Extracting embeddings:  98%|#########7| 125/128 [03:01<00:04,  1.45s/it]Extracting embeddings:  98%|#########8| 126/128 [03:03<00:02,  1.45s/it]Extracting embeddings:  99%|#########9| 127/128 [03:04<00:01,  1.45s/it]Extracting embeddings: 100%|##########| 128/128 [03:06<00:00,  1.45s/it]Extracting embeddings: 100%|##########| 128/128 [03:06<00:00,  1.45s/it]
+  Embedding matrix shape: (131072, 1024)
+
+Computing PCA for n_samples=16384...
+  Computed 1024 eigenvalues
+  Top 10 eigenvalues: [0.49206915 0.05305772 0.04636955 0.02992135 0.0266121  0.02491151
+ 0.0187852  0.01245346 0.01234702 0.01043889]
+  Variance explained by top 10: 78.97%
+
+Computing PCA for n_samples=32768...
+  Computed 1024 eigenvalues
+  Top 10 eigenvalues: [0.49122047 0.05221106 0.04647226 0.02972227 0.02611707 0.0246198
+ 0.01840285 0.01242548 0.01232719 0.01047332]
+  Variance explained by top 10: 78.87%
+
+Computing PCA for n_samples=131072...
+  Computed 1024 eigenvalues
+  Top 10 eigenvalues: [0.49332952 0.05131346 0.04617257 0.02946314 0.02504199 0.02433822
+ 0.01842463 0.01249563 0.01218694 0.01048083]
+  Variance explained by top 10: 78.93%
+
+Fitting full PCA for classification (n=131072)...
+
+Saving checkpoint to: results/sep/v41/eigenspectrum_sglmexp_l512_n16384_32768_131072_pmean.pkl
+
+For n=131072:
+  Components needed for 90% variance: 41
+  Components needed for 95% variance: 97
+  Effective sample size: 3.33914495
+  Condition number: 8.97259202e+14
+
+Figure saved to: results/sep/v41/eigenspectrum_sglmexp_n131072_l512_pmean.png
+PDF saved to: results/sep/v41/eigenspectrum_sglmexp_n131072_l512_pmean.pdf
+Eigenvalue data exported to: results/sep/v41/eigenspectrum_sglmexp_n131072_l512_pmean.csv
+
+======================================================================
+PC SCALING ANALYSIS
+Testing n_components: [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+======================================================================
+Extracting sequence features:   0%|          | 0/131072 [00:00<?, ?it/s]Extracting sequence features:   3%|2         | 3700/131072 [00:00<00:03, 36990.60it/s]Extracting sequence features:   6%|5         | 7601/131072 [00:00<00:03, 38152.70it/s]Extracting sequence features:   9%|8         | 11584/131072 [00:00<00:03, 38914.05it/s]Extracting sequence features:  12%|#1        | 15538/131072 [00:00<00:02, 39158.01it/s]Extracting sequence features:  15%|#4        | 19507/131072 [00:00<00:02, 39346.77it/s]Extracting sequence features:  18%|#7        | 23483/131072 [00:00<00:02, 39482.67it/s]Extracting sequence features:  21%|##        | 27462/131072 [00:00<00:02, 39579.96it/s]Extracting sequence features:  24%|##3       | 31428/131072 [00:00<00:02, 39589.76it/s]Extracting sequence features:  27%|##7       | 35414/131072 [00:00<00:02, 39663.76it/s]Extracting sequence features:  30%|###       | 39409/131072 [00:01<00:02, 39751.78it/s]Extracting sequence features:  33%|###3      | 43406/131072 [00:01<00:02, 39816.52it/s]Extracting sequence features:  36%|###6      | 47388/131072 [00:01<00:02, 39721.99it/s]Extracting sequence features:  39%|###9      | 51369/131072 [00:01<00:02, 39747.07it/s]Extracting sequence features:  42%|####2     | 55357/131072 [00:01<00:01, 39785.12it/s]Extracting sequence features:  45%|####5     | 59336/131072 [00:01<00:01, 39777.23it/s]Extracting sequence features:  48%|####8     | 63314/131072 [00:01<00:01, 39774.23it/s]Extracting sequence features:  51%|#####1    | 67292/131072 [00:01<00:01, 39702.70it/s]Extracting sequence features:  54%|#####4    | 71298/131072 [00:01<00:01, 39730.53it/s]Extracting sequence features:  57%|#####7    | 75310/131072 [00:01<00:01, 39841.12it/s]Extracting sequence features:  60%|######    | 79295/131072 [00:02<00:01, 39840.89it/s]Extracting sequence features:  64%|######3   | 83288/131072 [00:02<00:01, 39849.38it/s]Extracting sequence features:  67%|######6   | 87294/131072 [00:02<00:01, 39912.24it/s]Extracting sequence features:  70%|######9   | 91286/131072 [00:02<00:00, 39875.04it/s]Extracting sequence features:  73%|#######2  | 95274/131072 [00:02<00:00, 39873.86it/s]Extracting sequence features:  76%|#######5  | 99262/131072 [00:02<00:00, 39871.15it/s]Extracting sequence features:  79%|#######8  | 103250/131072 [00:02<00:00, 39713.41it/s]Extracting sequence features:  82%|########1 | 107251/131072 [00:02<00:00, 39798.27it/s]Extracting sequence features:  85%|########4 | 111250/131072 [00:02<00:00, 39846.17it/s]Extracting sequence features:  88%|########7 | 115235/131072 [00:02<00:00, 39797.86it/s]Extracting sequence features:  91%|######### | 119248/131072 [00:03<00:00, 39895.19it/s]Extracting sequence features:  94%|#########4| 123238/131072 [00:03<00:00, 39831.28it/s]Extracting sequence features:  97%|#########7| 127222/131072 [00:03<00:00, 39731.31it/s]Extracting sequence features: 100%|##########| 131072/131072 [00:03<00:00, 39685.16it/s]
+[species[n_comp=0]] 6 classes, 131072 samples
+  Classes: Caenorhabditis elegans, Callithrix jacchus, Drosophila melanogaster, Fundulus heteroclitus, Homo sapiens, Mus musculus
+  species              Performance by n_components:
+    Accuracy:  0.210 0.342 0.358 0.438 0.502 0.580 0.614 0.631 0.638 0.649 0.648 0.651 0.649
+    F1:        0.142 0.277 0.306 0.451 0.510 0.613 0.663 0.685 0.694 0.704 0.703 0.706 0.705
+    ROC AUC:   0.496 0.711 0.739 0.814 0.855 0.887 0.900 0.906 0.909 0.912 0.912 0.913 0.912
+    AUPRC:     0.166 0.291 0.324 0.473 0.549 0.661 0.715 0.733 0.743 0.751 0.751 0.754 0.751
+[gc_content[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.146-0.391, 0.391-0.453, 0.453-0.523, 0.523-0.625, 0.625-1.000
+  gc_content           Performance by n_components:
+    Accuracy:  0.197 0.801 0.805 0.817 0.824 0.837 0.867 0.886 0.896 0.898 0.899 0.897 0.897
+    F1:        0.195 0.801 0.805 0.817 0.825 0.838 0.867 0.886 0.896 0.898 0.899 0.897 0.897
+    ROC AUC:   0.496 0.965 0.966 0.970 0.972 0.976 0.983 0.987 0.990 0.990 0.990 0.990 0.989
+    AUPRC:     0.198 0.852 0.859 0.871 0.883 0.898 0.928 0.948 0.957 0.958 0.958 0.957 0.955
+[repeat_fraction[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-0.041, 0.041-0.092, 0.092-0.160, 0.160-0.271, 0.271-1.000
+  repeat_fraction      Performance by n_components:
+    Accuracy:  0.209 0.322 0.330 0.359 0.375 0.432 0.469 0.495 0.499 0.503 0.503 0.499 0.498
+    F1:        0.179 0.282 0.316 0.352 0.371 0.431 0.471 0.497 0.502 0.506 0.505 0.501 0.500
+    ROC AUC:   0.501 0.671 0.678 0.702 0.716 0.771 0.803 0.820 0.824 0.825 0.825 0.824 0.822
+    AUPRC:     0.200 0.313 0.321 0.356 0.373 0.449 0.491 0.517 0.523 0.526 0.526 0.524 0.519
+[kmer_entropy_1[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-1.908, 1.908-1.949, 1.949-1.972, 1.972-1.987, 1.987-2.000
+  kmer_entropy_1       Performance by n_components:
+    Accuracy:  0.197 0.574 0.604 0.636 0.650 0.680 0.705 0.720 0.728 0.728 0.726 0.726 0.722
+    F1:        0.196 0.571 0.602 0.634 0.648 0.679 0.705 0.720 0.728 0.728 0.726 0.725 0.721
+    ROC AUC:   0.499 0.857 0.882 0.896 0.905 0.920 0.931 0.936 0.939 0.938 0.938 0.937 0.936
+    AUPRC:     0.199 0.572 0.626 0.653 0.676 0.713 0.744 0.758 0.769 0.768 0.766 0.764 0.760
+[kmer_entropy_3[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-5.534, 5.534-5.648, 5.648-5.716, 5.716-5.777, 5.777-5.937
+  kmer_entropy_3       Performance by n_components:
+    Accuracy:  0.201 0.442 0.486 0.514 0.540 0.600 0.625 0.643 0.650 0.656 0.652 0.654 0.649
+    F1:        0.201 0.433 0.479 0.506 0.534 0.597 0.623 0.642 0.650 0.655 0.651 0.653 0.647
+    ROC AUC:   0.503 0.760 0.799 0.819 0.839 0.879 0.894 0.902 0.906 0.907 0.907 0.907 0.906
+    AUPRC:     0.202 0.443 0.495 0.528 0.564 0.631 0.661 0.676 0.687 0.691 0.691 0.690 0.688
+[kmer_entropy_9[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-8.929, 8.929-8.957, 8.957-8.969, 8.969-8.973, 8.973-8.977
+  kmer_entropy_9       Performance by n_components:
+    Accuracy:  0.335 0.376 0.388 0.409 0.418 0.500 0.531 0.536 0.539 0.540 0.540 0.541 0.538
+    F1:        0.100 0.199 0.226 0.262 0.274 0.359 0.397 0.403 0.407 0.408 0.407 0.407 0.403
+    ROC AUC:   0.499 0.580 0.599 0.631 0.646 0.738 0.764 0.771 0.770 0.772 0.772 0.771 0.769
+    AUPRC:     0.200 0.263 0.281 0.310 0.326 0.425 0.452 0.462 0.463 0.465 0.466 0.466 0.464
+[dinuc_CG[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-0.012, 0.012-0.025, 0.025-0.043, 0.043-0.072, 0.072-0.229
+  dinuc_CG             Performance by n_components:
+    Accuracy:  0.204 0.460 0.501 0.574 0.638 0.730 0.755 0.763 0.773 0.781 0.784 0.783 0.779
+    F1:        0.176 0.427 0.494 0.574 0.638 0.732 0.757 0.765 0.775 0.782 0.785 0.785 0.780
+    ROC AUC:   0.496 0.775 0.804 0.859 0.899 0.941 0.950 0.953 0.956 0.959 0.959 0.959 0.958
+    AUPRC:     0.198 0.467 0.514 0.609 0.674 0.778 0.803 0.815 0.826 0.834 0.836 0.837 0.835
+[dinuc_GC[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-0.039, 0.039-0.053, 0.053-0.068, 0.068-0.098, 0.098-0.233
+  dinuc_GC             Performance by n_components:
+    Accuracy:  0.208 0.634 0.639 0.645 0.650 0.660 0.682 0.716 0.739 0.745 0.748 0.747 0.746
+    F1:        0.185 0.633 0.639 0.644 0.649 0.659 0.681 0.715 0.738 0.745 0.748 0.747 0.746
+    ROC AUC:   0.501 0.893 0.896 0.900 0.903 0.908 0.919 0.934 0.942 0.945 0.945 0.945 0.944
+    AUPRC:     0.201 0.651 0.661 0.673 0.680 0.692 0.717 0.756 0.780 0.787 0.787 0.786 0.784
+[dinuc_AT[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-0.023, 0.023-0.041, 0.041-0.061, 0.061-0.080, 0.080-0.249
+  dinuc_AT             Performance by n_components:
+    Accuracy:  0.207 0.650 0.653 0.661 0.667 0.682 0.692 0.727 0.751 0.758 0.762 0.760 0.760
+    F1:        0.182 0.654 0.657 0.664 0.670 0.684 0.694 0.729 0.754 0.760 0.764 0.762 0.762
+    ROC AUC:   0.501 0.907 0.910 0.915 0.918 0.924 0.927 0.942 0.949 0.951 0.952 0.952 0.951
+    AUPRC:     0.201 0.676 0.685 0.699 0.709 0.724 0.733 0.775 0.797 0.806 0.808 0.809 0.808
+[dinuc_TA[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-0.020, 0.020-0.033, 0.033-0.049, 0.049-0.065, 0.065-0.227
+  dinuc_TA             Performance by n_components:
+    Accuracy:  0.211 0.597 0.606 0.615 0.624 0.640 0.672 0.712 0.723 0.729 0.729 0.729 0.728
+    F1:        0.164 0.597 0.606 0.616 0.624 0.640 0.672 0.712 0.723 0.729 0.729 0.728 0.728
+    ROC AUC:   0.501 0.882 0.886 0.892 0.896 0.905 0.918 0.935 0.939 0.942 0.941 0.941 0.940
+    AUPRC:     0.200 0.616 0.629 0.643 0.652 0.675 0.703 0.751 0.763 0.771 0.767 0.768 0.765
+[dinuc_AA[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-0.037, 0.037-0.061, 0.061-0.084, 0.084-0.112, 0.112-0.346
+  dinuc_AA             Performance by n_components:
+    Accuracy:  0.201 0.508 0.540 0.550 0.564 0.640 0.677 0.689 0.701 0.713 0.712 0.711 0.710
+    F1:        0.187 0.507 0.537 0.547 0.562 0.639 0.676 0.688 0.701 0.712 0.711 0.710 0.708
+    ROC AUC:   0.499 0.819 0.844 0.851 0.860 0.903 0.919 0.923 0.929 0.933 0.933 0.933 0.932
+    AUPRC:     0.199 0.511 0.553 0.567 0.588 0.674 0.710 0.723 0.741 0.752 0.751 0.750 0.749
+[dinuc_TT[n_comp=0]] 5 classes, 131072 samples
+  Classes: 0.000-0.037, 0.037-0.061, 0.061-0.084, 0.084-0.112, 0.112-0.335
+  dinuc_TT             Performance by n_components:
+    Accuracy:  0.198 0.516 0.525 0.549 0.608 0.635 0.678 0.692 0.701 0.712 0.711 0.709 0.709
+    F1:        0.189 0.508 0.517 0.547 0.605 0.633 0.677 0.691 0.699 0.711 0.709 0.708 0.708
+    ROC AUC:   0.495 0.826 0.833 0.847 0.884 0.900 0.919 0.926 0.929 0.933 0.933 0.933 0.932
+    AUPRC:     0.198 0.518 0.533 0.565 0.631 0.666 0.713 0.727 0.738 0.750 0.751 0.749 0.747
+
+PC scaling curves saved to: results/sep/v41/pc_scaling_curves.png
+PC scaling curves PDF saved to: results/sep/v41/pc_scaling_curves.pdf
+PC scaling data exported to: results/sep/v41/pc_scaling_curves.csv
+
+======================================================================
+SUMMARY: F1 by n_components
+======================================================================
+Target                     0       1       2       3       4       8      16      32      64     128     256     512    1024
+----------------------------------------------------------------------------------------------------------------------------
+dinuc_AA               0.187   0.507   0.537   0.547   0.562   0.639   0.676   0.688   0.701   0.712   0.711   0.710   0.708
+dinuc_AT               0.182   0.654   0.657   0.664   0.670   0.684   0.694   0.729   0.754   0.760   0.764   0.762   0.762
+dinuc_CG               0.176   0.427   0.494   0.574   0.638   0.732   0.757   0.765   0.775   0.782   0.785   0.785   0.780
+dinuc_GC               0.185   0.633   0.639   0.644   0.649   0.659   0.681   0.715   0.738   0.745   0.748   0.747   0.746
+dinuc_TA               0.164   0.597   0.606   0.616   0.624   0.640   0.672   0.712   0.723   0.729   0.729   0.728   0.728
+dinuc_TT               0.189   0.508   0.517   0.547   0.605   0.633   0.677   0.691   0.699   0.711   0.709   0.708   0.708
+gc_content             0.195   0.801   0.805   0.817   0.825   0.838   0.867   0.886   0.896   0.898   0.899   0.897   0.897
+kmer_entropy_1         0.196   0.571   0.602   0.634   0.648   0.679   0.705   0.720   0.728   0.728   0.726   0.725   0.721
+kmer_entropy_3         0.201   0.433   0.479   0.506   0.534   0.597   0.623   0.642   0.650   0.655   0.651   0.653   0.647
+kmer_entropy_9         0.100   0.199   0.226   0.262   0.274   0.359   0.397   0.403   0.407   0.408   0.407   0.407   0.403
+repeat_fraction        0.179   0.282   0.316   0.352   0.371   0.431   0.471   0.497   0.502   0.506   0.505   0.501   0.500
+species                0.142   0.277   0.306   0.451   0.510   0.613   0.663   0.685   0.694   0.704   0.703   0.706   0.705
+
+Training species classifier with n_components=1024 PCs...
+[Species] 6 classes, 131072 samples
+  Classes: Caenorhabditis elegans, Callithrix jacchus, Drosophila melanogaster, Fundulus heteroclitus, Homo sapiens, Mus musculus
+
+[Species] n_classes=6, acc=0.649, f1=0.705
+Confusion matrix saved to: results/sep/v41/eigenspectrum_sglmexp_n131072_l512_pmean_confusion_matrix.png
+Confusion matrix PDF saved to: results/sep/v41/eigenspectrum_sglmexp_n131072_l512_pmean_confusion_matrix.pdf
+Confusion matrix data exported to: results/sep/v41/eigenspectrum_sglmexp_n131072_l512_pmean_confusion_matrix.csv
+Classification metrics exported to: results/sep/v41/eigenspectrum_sglmexp_n131072_l512_pmean_confusion_matrix_metrics.csv
+
+Run completed: 2025-12-30T20:40:27.419318
+
+Done!

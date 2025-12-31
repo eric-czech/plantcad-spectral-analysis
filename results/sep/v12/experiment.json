@@ -13,7 +13,7 @@
 
   "model__name": "PlantCAD2-Small",
   "model__type": "MLM",
-  "model__source": "plantcad",
+  "model__source": "plantcad_rand",
   "model__training_status": "random_init",
   "model__flop_budget": null,
   "model__width_class": null,

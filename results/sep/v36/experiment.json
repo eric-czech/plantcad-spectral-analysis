@@ -1,0 +1,33 @@
+{
+  "version": "v36",
+  "title": "Qwen2-1.5B StarCoder Python",
+  "description": "Pre-trained Qwen2-1.5B eigenspectrum on StarCoder Python code dataset",
+  "experiment_group": "text_baseline",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 4096,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [16384],
+  "analysis__max_sample_size": 16384,
+  "analysis__max_rank": 1536,
+
+  "model__name": "Qwen2-1.5B",
+  "model__type": "CLM",
+  "model__source": "marin",
+  "model__training_status": "trained",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": null,
+
+  "data__modality": "text",
+  "data__kingdom": null,
+  "data__dataset": "bigcode/starcoderdata",
+  "data__split": "train",
+  "data__species_filter": null,
+  "data__species_filter_value": null,
+
+  "reference__github_issue": null,
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "Qwen/Qwen2-1.5B"
+}
+

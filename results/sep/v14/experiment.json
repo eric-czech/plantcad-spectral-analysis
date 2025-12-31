@@ -1,7 +1,7 @@
 {
   "version": "v14",
-  "title": "PlantCAD2-Small random init at 8192bp",
-  "description": "Randomly initialized PlantCAD2-Small at full context length as baseline comparison",
+  "title": "PlantCAD2-Small random init 8192bp",
+  "description": "Randomly initialized PlantCAD2-Small at full context length",
   "experiment_group": "plantcad2_baseline",
 
   "analysis__method": "model_activation_pca",
@@ -13,7 +13,7 @@
 
   "model__name": "PlantCAD2-Small",
   "model__type": "MLM",
-  "model__source": "plantcad",
+  "model__source": "plantcad_rand",
   "model__training_status": "random_init",
   "model__flop_budget": null,
   "model__width_class": null,
@@ -21,7 +21,7 @@
 
   "data__modality": "dna",
   "data__kingdom": "plants",
-  "data__dataset": "plantcad",
+  "data__dataset": "plantcad/Angiosperm_65_genomes_8192bp",
   "data__split": "train",
   "data__species_filter": "all",
   "data__species_filter_value": null,

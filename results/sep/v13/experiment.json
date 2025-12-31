@@ -1,7 +1,7 @@
 {
   "version": "v13",
-  "title": "PlantCAD2-Small baseline at 8192bp",
-  "description": "Full context length eigenspectrum decomposition of trained PlantCAD2-Small",
+  "title": "PlantCAD2-Small baseline 8192bp",
+  "description": "PlantCAD2-Small trained model at full context length",
   "experiment_group": "plantcad2_baseline",
 
   "analysis__method": "model_activation_pca",
@@ -17,11 +17,11 @@
   "model__training_status": "trained",
   "model__flop_budget": null,
   "model__width_class": null,
-  "model__simulation_mode": "none",
+  "model__simulation_mode": null,
 
   "data__modality": "dna",
   "data__kingdom": "plants",
-  "data__dataset": "plantcad",
+  "data__dataset": "plantcad/Angiosperm_65_genomes_8192bp",
   "data__split": "train",
   "data__species_filter": "all",
   "data__species_filter_value": null,

@@ -13,7 +13,7 @@
 
   "model__name": "Qwen2-1.5B",
   "model__type": "CLM",
-  "model__source": "huggingface",
+  "model__source": "marin",
   "model__training_status": "trained",
   "model__flop_budget": null,
   "model__width_class": null,

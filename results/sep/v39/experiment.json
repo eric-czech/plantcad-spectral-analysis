@@ -1,0 +1,33 @@
+{
+  "version": "v39",
+  "title": "GLM-Experiments animal promoter 65 species",
+  "description": "GLM-Experiments model on animal promoter dataset filtered to 65 most common species",
+  "experiment_group": "animals_promoter",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 512,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [16384, 65536, 262144],
+  "analysis__max_sample_size": 262144,
+  "analysis__max_rank": 1024,
+
+  "model__name": "glm-experiments",
+  "model__type": "CLM",
+  "model__source": "glmexp",
+  "model__training_status": "trained",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": null,
+
+  "data__modality": "dna",
+  "data__kingdom": "animals",
+  "data__dataset": "eczech/gpn-animal-promoter-dataset",
+  "data__split": "train",
+  "data__species_filter": "species_subset",
+  "data__species_filter_value": "gpn_promoter_65_most_common_species.txt",
+
+  "reference__github_issue": null,
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "gonzalobenegas/dev-glm-experiments-logs"
+}
+

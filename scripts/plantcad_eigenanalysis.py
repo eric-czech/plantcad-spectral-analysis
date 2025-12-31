@@ -42,6 +42,8 @@ from sklearn.metrics import (
     confusion_matrix,
     ConfusionMatrixDisplay,
     f1_score,
+    roc_auc_score,
+    average_precision_score,
 )
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -1436,6 +1438,8 @@ class ClassificationResult:
     n_classes: int
     accuracy: float
     f1_macro: float
+    roc_auc_macro: float  # ROC AUC score (macro-averaged, One-vs-Rest for multiclass)
+    auprc_macro: float  # Average Precision score (macro-averaged, One-vs-Rest for multiclass)
     class_names: list[str]
     feature_importances: np.ndarray  # Per-PC importance
 
@@ -1564,11 +1568,39 @@ def train_classifier(
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message="X does not have valid feature names")
         y_pred = model.predict(X_test)
+        y_pred_proba = model.predict_proba(X_test)
     accuracy = (y_pred == y_test).mean()
     f1_macro = f1_score(y_test, y_pred, average='macro')
     
+    # Compute ROC AUC and AUPRC using One-vs-Rest strategy
+    # Handle both binary and multiclass cases
+    # Try each metric separately so one can succeed even if the other fails
+    try:
+        if n_classes == 2:
+            # Binary classification
+            roc_auc_macro = roc_auc_score(y_test, y_pred_proba[:, 1])
+        else:
+            # Multiclass classification (OVR)
+            roc_auc_macro = roc_auc_score(y_test, y_pred_proba, average='macro', multi_class='ovr')
+    except ValueError as e:
+        # Handle cases where ROC AUC cannot be computed (e.g., only one class in y_test)
+        print(f"Warning: Could not compute ROC AUC for {target_name}: {e}")
+        roc_auc_macro = float('nan')
+    
+    try:
+        if n_classes == 2:
+            # Binary classification
+            auprc_macro = average_precision_score(y_test, y_pred_proba[:, 1])
+        else:
+            # Multiclass classification (OVR)
+            auprc_macro = average_precision_score(y_test, y_pred_proba, average='macro')
+    except ValueError as e:
+        # Handle cases where AUPRC cannot be computed
+        print(f"Warning: Could not compute AUPRC for {target_name}: {e}")
+        auprc_macro = float('nan')
+    
     if verbose:
-        print(f"\n[{target_name}] n_classes={n_classes}, acc={accuracy:.3f}, f1={f1_macro:.3f}")
+        print(f"\n[{target_name}] n_classes={n_classes}, acc={accuracy:.3f}, f1={f1_macro:.3f}, roc_auc={roc_auc_macro:.3f}, auprc={auprc_macro:.3f}")
     
     return ClassificationResult(
         target_name=target_name,
@@ -1576,6 +1608,8 @@ def train_classifier(
         n_classes=n_classes,
         accuracy=accuracy,
         f1_macro=f1_macro,
+        roc_auc_macro=roc_auc_macro,
+        auprc_macro=auprc_macro,
         class_names=class_names,
         feature_importances=model.feature_importances_,
     )
@@ -1589,6 +1623,8 @@ class PCScalingResult:
     n_components_list: list[int]
     accuracies: list[float]
     f1_scores: list[float]
+    roc_auc_scores: list[float]  # ROC AUC scores (macro-averaged)
+    auprc_scores: list[float]  # AUPRC scores (macro-averaged)
 
 def analyze_pc_predictivity(
     pca: PCA,
@@ -1598,6 +1634,7 @@ def analyze_pc_predictivity(
     n_bins: int = 5,
     seed: int = 42,
     output_dir: str = None,
+    min_samples_per_class: int = 2,
 ) -> dict[str, PCScalingResult]:
     """
     Analyze how classification performance scales with number of PCs.
@@ -1614,6 +1651,7 @@ def analyze_pc_predictivity(
         n_bins: Number of bins for discretizing continuous features
         seed: Random seed
         output_dir: Directory to save plots (if None, plots are not saved)
+        min_samples_per_class: Minimum samples per class (filters rare classes)
         
     Returns:
         Dict mapping target_name -> PCScalingResult
@@ -1657,21 +1695,24 @@ def analyze_pc_predictivity(
     # Train classifiers for each (target, n_components) combination
     results = {}
     for target_name, (labels, class_names) in targets.items():
-        accs, f1s, n_classes_list = [], [], []
+        accs, f1s, roc_aucs, auprcs, n_classes_list = [], [], [], [], []
         for i, n_comp in enumerate(n_components_list):
             # Use random baseline for n_components=0
             X_subset = X_random if n_comp == 0 else X_pca_full[:, :n_comp]
             res = train_classifier(
                 X_pca=X_subset,
                 labels=labels,
-                target_name=f"{target_name}[{n_comp}]",
+                target_name=f"{target_name}[{n_comp=}]",
                 class_names=class_names,
                 seed=seed,
+                min_samples_per_class=min_samples_per_class,
                 verbose=False,
                 log_class_info=(i == 0),  # Only log for first n_comp
             )
             accs.append(res.accuracy)
             f1s.append(res.f1_macro)
+            roc_aucs.append(res.roc_auc_macro)
+            auprcs.append(res.auprc_macro)
             n_classes_list.append(res.n_classes)
         
         # Verify n_classes is consistent across all n_components
@@ -1684,10 +1725,19 @@ def analyze_pc_predictivity(
             n_components_list=n_components_list,
             accuracies=accs,
             f1_scores=f1s,
+            roc_auc_scores=roc_aucs,
+            auprc_scores=auprcs,
         )
-        # Print compact summary
-        f1_str = " ".join(f"{f:.2f}" for f in f1s)
-        print(f"  {target_name:<20} F1: {f1_str}")
+        # Print compact summary with all metrics
+        print(f"  {target_name:<20} Performance by n_components:")
+        acc_str = " ".join(f"{a:.3f}" for a in accs)
+        f1_str = " ".join(f"{f:.3f}" for f in f1s)
+        roc_str = " ".join(f"{r:.3f}" if not np.isnan(r) else "  nan" for r in roc_aucs)
+        auprc_str = " ".join(f"{a:.3f}" if not np.isnan(a) else "  nan" for a in auprcs)
+        print(f"    Accuracy:  {acc_str}")
+        print(f"    F1:        {f1_str}")
+        print(f"    ROC AUC:   {roc_str}")
+        print(f"    AUPRC:     {auprc_str}")
     
     # Plot scaling curves
     if output_dir:
@@ -1764,13 +1814,22 @@ def plot_pc_scaling_curves(
     csv_path = os.path.join(output_dir, 'pc_scaling_curves.csv')
     rows = []
     for target_name, res in results.items():
-        for n_comp, acc, f1 in zip(res.n_components_list, res.accuracies, res.f1_scores, strict=True):
+        for n_comp, acc, f1, roc_auc, auprc in zip(
+            res.n_components_list, 
+            res.accuracies, 
+            res.f1_scores, 
+            res.roc_auc_scores, 
+            res.auprc_scores, 
+            strict=True
+        ):
             rows.append({
                 'target': target_name,
                 'n_classes': res.n_classes,
                 'n_components': n_comp,
                 'accuracy': acc,
                 'f1_macro': f1,
+                'roc_auc_macro': roc_auc,
+                'auprc_macro': auprc,
             })
     df = pd.DataFrame(rows)
     df.to_csv(csv_path, index=False)
@@ -1949,6 +2008,8 @@ def parse_args() -> argparse.Namespace:
                         help="Shuffle the dataset using the specified seed. Default: False")
     parser.add_argument("--dataset_dir", type=str, default=None,
                         help="Directory for loading dataset (data_dir parameter for load_dataset). Default: None")
+    parser.add_argument("--min_samples_per_class", type=int, default=2,
+                        help="Minimum number of samples per class for classification tasks (filters rare classes). Default: 2")
     return parser.parse_args()
 
 
@@ -2034,6 +2095,7 @@ def _run_main(args: argparse.Namespace, n_samples_list: list[int], basename: str
         n_bins=5,
         seed=results.seed,
         output_dir=args.output_dir,
+        min_samples_per_class=args.min_samples_per_class,
     )
     
     # Train species classifier and plot confusion matrix
@@ -2046,6 +2108,7 @@ def _run_main(args: argparse.Namespace, n_samples_list: list[int], basename: str
         n_components=max_available_pcs,
         output_path=confusion_matrix_path,
         seed=results.seed,
+        min_samples_per_class=args.min_samples_per_class,
     )
     
     print(f"\nRun completed: {datetime.now().isoformat()}")

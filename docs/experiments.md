@@ -10,30 +10,47 @@ These experiments all decompose activations from a single model using various in
 
 ### Experiment Summary
 
-| Version | Title | Group | Key Features |
-|---------|-------|-------|--------------|
-| v11 | PlantCAD2-Small validation split | plantcad2_baseline | MLM, 8192bp, validation split |
-| v12 | PlantCAD2-Small random init 4096bp | plantcad2_context_ablation | MLM, random_init, 4096bp |
-| v13 | PlantCAD2-Small baseline 8192bp | plantcad2_baseline | MLM, trained, full context |
-| v14 | PlantCAD2-Small random init 8192bp | plantcad2_baseline | MLM, random_init, full context |
-| v15 | PlantCAD2-Small baseline 4096bp | plantcad2_context_ablation | MLM, trained, reduced context |
-| v16 | Marin PoC 600M | marin_poc | CLM, 512bp, 1408 hidden dim |
-| v17 | IsoFLOP large width, high FLOP | marin_isoflop_large_width | 8.2e16 FLOP, 25M params |
-| v18 | IsoFLOP large width, low FLOP | marin_isoflop_large_width | 3.3e16 FLOP, 9.4M params |
-| v19 | IsoFLOP small width, low FLOP | marin_isoflop_small_width | 2.0e15 FLOP, 805K params |
-| v20 | IsoFLOP small width, smallest | marin_isoflop_small_width | 2.0e15 FLOP, 74.6K params |
-| v21 | IsoFLOP small width, high FLOP | marin_isoflop_small_width | 1.0e16 FLOP, 805K params |
-| v22 | Marin Qwen pretrain baseline | marin_simulation | simulation_mode=none |
-| v23 | Marin Qwen high homology | marin_simulation | simulation_mode=high_homology |
-| v24 | Marin Qwen k-mer shuffle | marin_simulation | simulation_mode=low_homology |
-| v25 | Marin Qwen random simulation | marin_simulation | simulation_mode=random |
-| v26 | Marin Qwen random init | marin_simulation | random_init baseline |
-| v27 | Marin Qwen Zmays only | marin_species_filter | single_species=Zmays |
-| v28 | Animal promoter dataset | animals_promoter | animals, 512bp, 65 species |
-| v29 | Wikitext small pretrain | text_baseline | text, 384 hidden dim |
-| v30 | Qwen2-1.5B DCLM-Edu | text_baseline | text, HF model, 1536 hidden dim |
+| Ver | Model | Dataset | Type | Init | Filter | Sim | Context | Notes |
+|-----|-------|---------|------|------|--------|-----|---------|-------|
+| v11 | PlantCAD2-S | PlantCAD | MLM | trained | all | - | 8192bp | validation split |
+| v12 | PlantCAD2-S | PlantCAD | MLM | rand | all | - | 4096bp | |
+| v13 | PlantCAD2-S | PlantCAD | MLM | trained | all | - | 8192bp | |
+| v14 | PlantCAD2-S | PlantCAD | MLM | rand | all | - | 8192bp | |
+| v15 | PlantCAD2-S | PlantCAD | MLM | trained | all | - | 4096bp | incomplete |
+| v16 | Marin-600M | PlantCAD | CLM | trained | all | - | 512bp | PoC model |
+| v17 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 8.2e16 FLOP, 25M |
+| v18 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 3.3e16 FLOP, 9.4M |
+| v19 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 2.0e15 FLOP, 805K |
+| v20 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 2.0e15 FLOP, 75K |
+| v21 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 1.0e16 FLOP, 805K |
+| v22 | Marin-Qwen | PlantCAD | CLM | trained | all | none | 4096bp | |
+| v23 | Marin-Qwen | PlantCAD | CLM | trained | all | high | 4096bp | high homology |
+| v24 | Marin-Qwen | PlantCAD | CLM | trained | all | low | 4096bp | k-mer shuffle |
+| v25 | Marin-Qwen | PlantCAD | CLM | trained | all | rand | 4096bp | random seqs |
+| v26 | Marin-Qwen | PlantCAD | CLM | rand | all | - | 4096bp | |
+| v27 | Marin-Qwen | PlantCAD | CLM | trained | single | none | 4096bp | Zmays only |
+| v28 | Marin-Qwen | Promoter | CLM | trained | 6sp | - | 512bp | GPN-star species |
+| v29 | Marin-Qwen | Wikitext | CLM | trained | - | none | 4096bp | text |
+| v30 | Qwen2-1.5B | DCLM-Edu | CLM | trained | - | - | 4096bp | text |
+| v31 | Marin-Qwen | Promoter | CLM | trained | all | - | 512bp | 417 species |
+| v32 | NTv2-50M | MultiSpecies | MLM | trained | all | - | 8192bp | |
+| v33 | NTv2-50M | Promoter | MLM | trained | 65sp | - | 512bp | |
+| v34 | AgroNT-1B | PlantCAD | MLM | trained | all | - | 6144bp | |
+| v35 | Qwen2-1.5B | DCLM-Base | CLM | trained | - | - | 4096bp | text |
+| v36 | Qwen2-1.5B | StarCoder | CLM | trained | - | - | 4096bp | text (Python) |
+| v37 | HyenaDNA-tiny | Promoter | CLM | trained | 65sp | - | 512bp | |
+| v38 | GPN-Brass | PlantCAD | MLM | trained | 3sp | - | 512bp | shared species |
+| v39 | GLM-Exp | Promoter | CLM | trained | 65sp | - | 512bp | |
+| v40 | GLM-Exp | Promoter | CLM | trained | all | - | 512bp | 417 species |
+| v41 | GLM-Exp | Promoter | CLM | trained | 6sp | - | 512bp | GPN-star species |
 
-See `results/sep/experiment_schema.json` for the full metadata schema and each `results/sep/v*/experiment.json` for complete experiment metadata.
+**Legend:**
+- **Init**: trained = pretrained weights, rand = random initialization
+- **Filter**: all = no filtering, Nsp = N species subset, single = single species
+- **Sim**: none/high/low/rand = simulation mode for training data
+- **Dataset**: PlantCAD = Angiosperm 65 genomes, Promoter = gpn-animal-promoter, MultiSpecies = InstaDeep multi_species_genomes
+
+See `results/schemas/experiment_schema.json` for the full metadata schema and each `results/sep/v*/experiment.json` for complete experiment metadata.
 
 ### DNA/Plants/PlantCAD2
 
@@ -51,12 +68,12 @@ python scripts/plantcad_eigenanalysis.py \
 # PlantCAD2-S at 4096bp context length
 python scripts/plantcad_eigenanalysis.py \
   --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
-  --output_dir results/sep/v15 --pooling_method mean --batch_size 32 --seq_len 4096 --force
+  --output_dir results/sep/v15 --pooling_method mean --batch_size 64 --seq_len 4096 --force
 
 # PlantCAD2-S at 4096bp context length with random init
 python scripts/plantcad_eigenanalysis.py \
   --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 \
-  --output_dir results/sep/v12 --pooling_method mean --batch_size 32 --seq_len 4096 --force
+  --output_dir results/sep/v12 --pooling_method mean --batch_size 64 --seq_len 4096 --force
 
 # PlantCAD2-S at full context length using validation split rather than train split
 python scripts/plantcad_eigenanalysis.py \
@@ -170,11 +187,6 @@ python scripts/plantcad_eigenanalysis.py \
 # - Athaliana: Arabidopsis thaliana
 # - Crubella: Capsella rubella
 # - Esalsugineum: Eutrema salsugineum
-cat << EOF > /tmp/gpn_plant_species_filter.txt
-Athaliana
-Crubella
-Esalsugineum
-EOF
 # Note there are only 107,865 sequences remaining after filtering.
 python scripts/plantcad_eigenanalysis.py \
   --source gpn --n_samples 8192 16384 65536 98304 \
@@ -183,7 +195,7 @@ python scripts/plantcad_eigenanalysis.py \
   --model_revision eb9c35d0d18571abe84390d22e74f2b21d319ce3 \
   --dataset_path plantcad/Angiosperm_65_genomes_8192bp \
   --dataset_revision 4a444fff5520b992aa978d92a5af509a81977098 \
-  --species_filter_file /tmp/gpn_plant_species_filter.txt \
+  --species_filter_file data/filters/gpn_plantcad_shared_species.txt \
   --species_column assembly \
   --dtype float32 --tokenization_mode strict \
   --split train \
@@ -198,25 +210,24 @@ Species were mapped to this dataset in [eczech/gpn-animal-promoter-dataset](http
 
 ```bash
 
-# Fetch 65 most prevalent species to be used for both decomposition and species classification:
-curl -o /tmp/gpn_promoter_species_filter.txt https://gist.githubusercontent.com/eric-czech/c2e65ecee9d89c7dc479306ddc895585/raw/4b70e7a511231345569b4598378b7f3c6d3bdae0/species_filter_gpn_promoter.txt
-
-# Run on species subset:
+# Run on species subset
+# Note: only 152624 records remain after species filtering
 python scripts/plantcad_eigenanalysis.py \
-  --source marin --n_samples 512 1024 4096 8192 16384 32768 65536 \
+  --source marin --n_samples 512 4096 16384 65536 152624 \
   --output_dir results/sep/v28 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
-  --species_filter_file /tmp/gpn_promoter_species_filter.txt \
+  --species_filter_file data/filters/gpn_star_extended_species.txt \
   --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
   --model_subfolder checkpoints/gpn_promoter_pretrain_c512_v0.2 \
   --pooling_method mean --batch_size 512 --seq_len 512
 
 # Run on all species
 python scripts/plantcad_eigenanalysis.py \
-  --source marin --n_samples 512 1024 4096 8192 16384 32768 65536 \
+  --source marin --n_samples 512 4096 16384 65536 262144 \
   --output_dir results/sep/v31 \
+  --min_samples_per_class 16 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
@@ -254,7 +265,7 @@ python scripts/plantcad_eigenanalysis.py \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
-  --species_filter_file /tmp/gpn_promoter_species_filter.txt \
+  --species_filter_file data/filters/gpn_promoter_65_most_common_species.txt \
   --dtype float32 --tokenization_mode lenient \
   --split train \
   --pooling_method mean --batch_size 64 --seq_len 512
@@ -285,7 +296,7 @@ python scripts/plantcad_eigenanalysis.py \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
-  --species_filter_file /tmp/gpn_promoter_species_filter.txt \
+  --species_filter_file data/filters/gpn_promoter_65_most_common_species.txt \
   --dtype float32 --tokenization_mode lenient \
   --split train \
   --pooling_method mean --batch_size 256 --seq_len 512
@@ -307,7 +318,7 @@ python scripts/plantcad_eigenanalysis.py \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
-  --species_filter_file /tmp/gpn_promoter_species_filter.txt \
+  --species_filter_file data/filters/gpn_promoter_65_most_common_species.txt \
   --dtype bfloat16 --tokenization_mode strict \
   --split train \
   --pooling_method mean --batch_size 1024 --seq_len 512
@@ -315,10 +326,23 @@ python scripts/plantcad_eigenanalysis.py \
 # No species filtering
 python scripts/plantcad_eigenanalysis.py \
   --source glmexp --n_samples 16384 65536 262144 \
+  --min_samples_per_class 16 \
   --output_dir results/sep/v40 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
+  --dtype bfloat16 --tokenization_mode strict \
+  --split train \
+  --pooling_method mean --batch_size 1024 --seq_len 512
+
+# GPN-star species + human and a couple others:
+python scripts/plantcad_eigenanalysis.py \
+  --source glmexp --n_samples 16384 32768 131072 \
+  --output_dir results/sep/v41 \
+  --dataset_path eczech/gpn-animal-promoter-dataset \
+  --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
+  --species_column organism \
+  --species_filter_file data/filters/gpn_star_extended_species.txt \
   --dtype bfloat16 --tokenization_mode strict \
   --split train \
   --pooling_method mean --batch_size 1024 --seq_len 512
