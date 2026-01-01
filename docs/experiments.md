@@ -52,27 +52,27 @@ See `results/schemas/experiment_schema.json` for the full metadata schema and ea
 
 ```bash
 # PlantCAD2-S at full context length
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v13 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # Random init of PlantCAD2-S at full context length
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v14 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # PlantCAD2-S at 4096bp context length
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v15 --pooling_method mean --batch_size 64 --seq_len 4096 --force
 
 # PlantCAD2-S at 4096bp context length with random init
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v12 --pooling_method mean --batch_size 64 --seq_len 4096 --force
 
 # PlantCAD2-S at full context length using validation split rather than train split
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v11 --pooling_method mean --batch_size 32 --seq_len 8192 --split validation --force
 ```
@@ -84,7 +84,7 @@ python scripts/plantcad_eigenanalysis.py \
 # PoC model
 # ------------------------------------------------------------------------------------------------
 # For PoC 512bp model from https://github.com/marin-community/marin/issues/1729:
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v16 --pooling_method mean \
   --species_filter_file data/filters/plantcad1_species.txt \
@@ -99,7 +99,7 @@ python scripts/plantcad_eigenanalysis.py \
 
 ## Large width (original)
 ### Largest FLOP budget
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v17 \
   --species_filter_file data/filters/plantcad1_species.txt \
@@ -107,7 +107,7 @@ python scripts/plantcad_eigenanalysis.py \
   --model_subfolder checkpoints/plantcad_isoflop_v1.0-A_qwen-F8.2e+16-P25M-T810M-E1-56b128/hf/step-6184 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force 
 ### Smallest FLOP budget
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v18 \
   --species_filter_file data/filters/plantcad1_species.txt \
@@ -117,7 +117,7 @@ python scripts/plantcad_eigenanalysis.py \
 
 ## Small width (tiny models)
 ### Smallest FLOP budget
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v19 \
   --species_filter_file data/filters/plantcad1_species.txt \
@@ -125,7 +125,7 @@ python scripts/plantcad_eigenanalysis.py \
   --model_subfolder checkpoints/plantcad_isoflop_v1.5-A_qwen-F2.0e+15-P805.3K-T207M-E1-96174b/hf/step-6333 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
 ### Smallest FLOP budget + smallest params
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v20 \
   --species_filter_file data/filters/plantcad1_species.txt \
@@ -134,7 +134,7 @@ python scripts/plantcad_eigenanalysis.py \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
   
 ### Largest FLOP budget
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v21 \
   --species_filter_file data/filters/plantcad1_species.txt \
@@ -161,7 +161,7 @@ for i in "${!checkpoints[@]}"; do
   checkpoint="${checkpoints[$i]}"
   version="${versions[$i]}"
 
-  python scripts/plantcad_eigenanalysis.py \
+  python scripts/decompose.py \
     --source marin --n_samples 512 1024 4096 16384 65536 262144 \
     --output_dir "results/sep/v${version}" \
     --species_filter_file data/filters/plantcad1_species.txt \
@@ -175,7 +175,7 @@ done
 # --------------------------------------------------------------------------------------------------
 # Single species filtering cf. https://github.com/plantcad/plantcad-dev/issues/39
 # Athaliana, Zmays, Gmax all show the same patterns, so only Zmays is used:
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 8192 16384 32768 \
   --output_dir results/sep/v27 \
   --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
@@ -183,7 +183,7 @@ python scripts/plantcad_eigenanalysis.py \
   --species_filter Zmays \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
 # All species
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v42 \
   --min_samples_per_class 16 \
@@ -202,7 +202,7 @@ python scripts/plantcad_eigenanalysis.py \
 # - Crubella: Capsella rubella
 # - Esalsugineum: Eutrema salsugineum
 # Note there are only 107,865 sequences remaining after filtering.
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source gpn --n_samples 8192 16384 65536 98304 \
   --output_dir results/sep/v38 \
   --model_path songlab/gpn-brassicales \
@@ -226,7 +226,7 @@ Species were mapped to this dataset in [eczech/gpn-animal-promoter-dataset](http
 
 # Run on species subset
 # Note: only 152624 records remain after species filtering
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 4096 16384 65536 152624 \
   --output_dir results/sep/v28 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
@@ -238,7 +238,7 @@ python scripts/plantcad_eigenanalysis.py \
   --pooling_method mean --batch_size 512 --seq_len 512
 
 # Run on all species
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 4096 16384 65536 262144 \
   --output_dir results/sep/v31 \
   --min_samples_per_class 16 \
@@ -255,7 +255,7 @@ NTv2 experiments:
 
 ```bash
 # NTv2 + multi-species genomes
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source ntv2 --n_samples 4096 8192 16384 \
   --output_dir results/sep/v32 \
   --model_path InstaDeepAI/nucleotide-transformer-v2-50m-multi-species \
@@ -271,7 +271,7 @@ python scripts/plantcad_eigenanalysis.py \
   --pooling_method mean --batch_size 16 --seq_len 8192
 
 # NTv2 + animal promoter dataset
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source ntv2 --n_samples 4096 8192 16384 \
   --output_dir results/sep/v33 \
   --model_path InstaDeepAI/nucleotide-transformer-v2-50m-multi-species \
@@ -286,7 +286,7 @@ python scripts/plantcad_eigenanalysis.py \
 
 # AgroNT + PlantCAD2 dataset; use 6144bp sequences for 1024 tokens, see:
 # https://huggingface.co/InstaDeepAI/agro-nucleotide-transformer-1b
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source ntv2 --n_samples 16384 32768 65536 \
   --output_dir results/sep/v34 \
   --model_path InstaDeepAI/agro-nucleotide-transformer-1b \
@@ -302,7 +302,7 @@ python scripts/plantcad_eigenanalysis.py \
 Hyena experiments:
 
 ```bash
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source hyena --n_samples 16384 65536 262144 \
   --output_dir results/sep/v37 \
   --model_path LongSafari/hyenadna-tiny-1k-seqlen-hf \
@@ -326,7 +326,7 @@ glm-experiments runs:
 # python -m pip install --no-deps -e .
 # ------
 # Filtered to 65 species
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source glmexp --n_samples 16384 65536 262144 \
   --output_dir results/sep/v39 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
@@ -338,7 +338,7 @@ python scripts/plantcad_eigenanalysis.py \
   --pooling_method mean --batch_size 1024 --seq_len 512
 
 # No species filtering
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source glmexp --n_samples 16384 65536 262144 \
   --min_samples_per_class 16 \
   --output_dir results/sep/v40 \
@@ -350,7 +350,7 @@ python scripts/plantcad_eigenanalysis.py \
   --pooling_method mean --batch_size 1024 --seq_len 512
 
 # GPN-star species + human and a couple others:
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source glmexp --n_samples 16384 32768 131072 \
   --output_dir results/sep/v41 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
@@ -368,7 +368,7 @@ Experiments on [Salesforce/wikitext](https://huggingface.co/datasets/Salesforce/
 
 ```bash
 # Wikitext + very small-scale Qwen local pretrain
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 8192 16384 \
   --output_dir results/sep/v29 \
   --dataset_path Salesforce/wikitext \
@@ -382,7 +382,7 @@ python scripts/plantcad_eigenanalysis.py \
   --pooling_method mean --batch_size 64 --seq_len 4096
   
 # Qwen2-1.5B + DCLM-Edu
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
 --source marin --n_samples 512 1024 4096 8192 16384 \
   --output_dir results/sep/v30 \
   --model_path Qwen/Qwen2-1.5B \
@@ -395,7 +395,7 @@ python scripts/plantcad_eigenanalysis.py \
   --pooling_method mean --batch_size 16 --seq_len 4096
 
 # Qwen2-1.5B + DCLM-Baseline
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 16384 \
   --output_dir results/sep/v35 \
   --model_path Qwen/Qwen2-1.5B \
@@ -408,7 +408,7 @@ python scripts/plantcad_eigenanalysis.py \
   --pooling_method mean --batch_size 16 --seq_len 4096
 
 # Qwen2-1.5B + StarCoder 
-python scripts/plantcad_eigenanalysis.py \
+python scripts/decompose.py \
   --source marin --n_samples 16384 \
   --output_dir results/sep/v36 \
   --model_path Qwen/Qwen2-1.5B \
@@ -429,7 +429,7 @@ Experiments for pair-wise eigenspectra decompositions between two models.
 
 ```bash
 # PlantCAD2-S vs random init on validation split
-python scripts/plantcad_relative_eigenanalysis.py \
+python scripts/compare.py \
   --model1_type masked --model1_path kuleshov-group/PlantCAD2-Small-l24-d0768 --model1_subfolder "" \
   --model1_label pc2-small \
   --model2_type masked --model2_path kuleshov-group/PlantCAD2-Small-l24-d0768 --model2_subfolder "" --model2_random_init \
@@ -437,7 +437,7 @@ python scripts/plantcad_relative_eigenanalysis.py \
   --n_samples 16384 --seq_len 8192 --split validation --batch_size 32 --output_dir results/gep/v1
   
 # PlantCAD2-S vs random init on train split
-python scripts/plantcad_relative_eigenanalysis.py \
+python scripts/compare.py \
   --model1_type masked --model1_path kuleshov-group/PlantCAD2-Small-l24-d0768 --model1_subfolder "" \
   --model1_label pc2-small \
   --model2_type masked --model2_path kuleshov-group/PlantCAD2-Small-l24-d0768 --model2_subfolder "" --model2_random_init \
@@ -445,7 +445,7 @@ python scripts/plantcad_relative_eigenanalysis.py \
   --n_samples 16384 --seq_len 8192 --split train --batch_size 32 --output_dir results/gep/v2
   
 # Qwen pretrain vs random init on train split
-python scripts/plantcad_relative_eigenanalysis.py \
+python scripts/compare.py \
   --model1_type causal --model1_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
   --model1_subfolder checkpoints/plantcad_pretrain_fp32_v0.3 \
   --model1_label marin-small \
@@ -455,7 +455,7 @@ python scripts/plantcad_relative_eigenanalysis.py \
   --n_samples 16384 --seq_len 4096 --split train --batch_size 64 --output_dir results/gep/v3
   
 # Qwen pretrain vs the same model with kmer-shuffled sequences
-python scripts/plantcad_relative_eigenanalysis.py \
+python scripts/compare.py \
   --model1_type causal --model1_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
   --model1_subfolder checkpoints/plantcad_pretrain_fp32_v0.3 \
   --model1_label marin-small \
@@ -476,28 +476,29 @@ Commands to generate models for decomposition analyses above.
 # Baseline models
 # ------------------------------------------------------------------------------------------------
 # https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/ogmaf8mr
-python scripts/plantcad_pretrain.py --dtype float32 --wandb_run_name plantcad_pretrain_fp32_v0.2
+python scripts/pretrain.py --dtype float32 --wandb_run_name plantcad_pretrain_fp32_v0.2
 # https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/ib431jty
-python scripts/plantcad_pretrain.py --dtype float64 --wandb_run_name plantcad_pretrain_fp64_v0.2
+python scripts/pretrain.py --dtype float64 --wandb_run_name plantcad_pretrain_fp64_v0.2
 
 # New runs following correction for W&B metric logging
 # https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/ej4xxsvc
-python scripts/plantcad_pretrain.py --dtype float32 --wandb_run_name plantcad_pretrain_fp32_v0.3
+python scripts/pretrain.py --dtype float32 --wandb_run_name plantcad_pretrain_fp32_v0.3
 hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/eczech/vista/analysis/pcad_eigenspectrum/checkpoints/plantcad_pretrain_fp32_v0.3 checkpoints/plantcad_pretrain_fp32_v0.3 --repo-type model
 
 # https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/iodqcytt
-python scripts/plantcad_pretrain.py --dtype float64 --wandb_run_name plantcad_pretrain_fp64_v0.3
+python scripts/pretrain.py --dtype float64 --wandb_run_name plantcad_pretrain_fp64_v0.3
 hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/eczech/vista/analysis/pcad_eigenspectrum/checkpoints/plantcad_pretrain_fp64_v0.3 checkpoints/plantcad_pretrain_fp64_v0.3 --repo-type model
 
 # Random init baseline
-python scripts/plantcad_pretrain.py --dtype float32 --no_train --wandb_run_name plantcad_pretrain_fp32_no_train_v0.3
+python scripts/pretrain.py --dtype float32 --no_train --wandb_run_name plantcad_pretrain_fp32_no_train_v0.3
 hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/eczech/vista/analysis/pcad_eigenspectrum/checkpoints/plantcad_pretrain_fp32_no_train_v0.3 checkpoints/plantcad_pretrain_fp32_no_train_v0.3 --repo-type model
 
 # ------------------------------------------------------------------------------------------------
 # Simulation models
 # ------------------------------------------------------------------------------------------------
 
-python scripts/plantcad_pretrain.py --dtype float32 \
+python scripts/pretrain.py \
+  --dtype float32 \
   --simulation_mode high_homology \
   --simulation_attractor_ratio .2 \
   --simulation_injection_rate .8 \
@@ -505,14 +506,16 @@ python scripts/plantcad_pretrain.py --dtype float32 \
 #  https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/4e4pd44s  
 hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/eczech/vista/analysis/pcad_eigenspectrum/checkpoints/plantcad_pretrain_fp32_sim_ar0.2_ir0.8_v0.3 checkpoints/plantcad_pretrain_fp32_sim_ar0.2_ir0.8_v0.3 --repo-type model
 
-python scripts/plantcad_pretrain.py --dtype float32 \
+python scripts/pretrain.py \
+  --dtype float32 \
   --simulation_mode low_homology \
   --simulation_k 3 \
   --wandb_run_name plantcad_pretrain_fp32_sim_k3_v0.3
 # https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/daqyb5zp
 hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/eczech/vista/analysis/pcad_eigenspectrum/checkpoints/plantcad_pretrain_fp32_sim_k3_v0.3 checkpoints/plantcad_pretrain_fp32_sim_k3_v0.3 --repo-type model
 
-python scripts/plantcad_pretrain.py --dtype float32 \
+python scripts/pretrain.py \
+  --dtype float32 \
   --simulation_mode random \
   --simulation_random_probability 1.0 \
   --wandb_run_name plantcad_pretrain_fp32_sim_rand_p1.0_v0.3
@@ -524,7 +527,7 @@ hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/e
 ### DNA/Animals
 
 ```bash
-python scripts/plantcad_pretrain.py \
+python scripts/pretrain.py \
   --dtype float32 \
   --dataset_path songlab/gpn-animal-promoter-dataset \
   --dataset_revision 09d363c86202374986c4a7ed6d39073aa1ac2e23 \
@@ -536,7 +539,7 @@ python scripts/plantcad_pretrain.py \
 # https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/y107yujz
 hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/eczech/vista/analysis/pcad_eigenspectrum/checkpoints/gpn_promoter_pretrain_c512_v0.1 checkpoints/gpn_promoter_pretrain_c512_v0.1 --repo-type model
 
-python scripts/plantcad_pretrain.py \
+python scripts/pretrain.py \
   --dtype float32 \
   --dataset_path songlab/gpn-animal-promoter-dataset \
   --dataset_revision 09d363c86202374986c4a7ed6d39073aa1ac2e23 \
@@ -553,7 +556,7 @@ hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/e
 ### Text
 
 ```bash
-python scripts/plantcad_pretrain.py \
+python scripts/pretrain.py \
   --dataset_path Salesforce/wikitext \
   --dataset_revision main \
   --dataset_config wikitext-2-v1 \

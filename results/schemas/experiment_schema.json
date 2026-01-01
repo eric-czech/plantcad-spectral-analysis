@@ -93,7 +93,7 @@
         "glmexp", "glmexp_rand",
         null
       ],
-      "description": "Feature source matching --source argument in plantcad_eigenanalysis.py"
+      "description": "Feature source matching --source argument in decompose.py"
     },
 
     "model__training_status": {
