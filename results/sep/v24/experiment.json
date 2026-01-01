@@ -23,8 +23,8 @@
   "data__kingdom": "plants",
   "data__dataset": "plantcad",
   "data__split": "train",
-  "data__species_filter": "all",
-  "data__species_filter_value": null,
+  "data__species_filter": "plantcad1_species",
+  "data__species_filter_value": "data/filters/plantcad1_species.txt",
 
   "reference__github_issue": null,
   "reference__wandb_run": "https://wandb.ai/eric-czech/plantcad-eigenanalysis/runs/daqyb5zp",

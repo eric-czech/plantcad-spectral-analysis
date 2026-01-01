@@ -1,0 +1,35 @@
+{
+  "version": "v42",
+  "title": "Marin Qwen pretrain baseline - all 65 species",
+  "description": "Same as v22 but using all 65 species without filtering (for comparison with species-filtered experiments)",
+  "experiment_group": "marin_species_filter",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 4096,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
+  "analysis__max_sample_size": 262144,
+  "analysis__max_rank": 384,
+  "analysis__min_samples_per_class": 16,
+
+  "model__name": "plantcad_pretrain_fp32_v0.3",
+  "model__type": "CLM",
+  "model__source": "marin",
+  "model__training_status": "trained",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": "none",
+
+  "data__modality": "dna",
+  "data__kingdom": "plants",
+  "data__dataset": "plantcad",
+  "data__split": "train",
+  "data__species_filter": "all",
+  "data__species_filter_value": null,
+  "data__num_species": 65,
+
+  "reference__github_issue": null,
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints"
+}
+

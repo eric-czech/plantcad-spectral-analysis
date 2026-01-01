@@ -1,9 +1,5 @@
 # PlantCAD Spectral Analysis Experiments
 
-Abbreviations: 
-- SEP = Standard Eigenvalue Problem
-- GEP = Generalized Eigenvalue Problem
-
 ## Standard Eigenanalysis (SEP)
 
 These experiments all decompose activations from a single model using various initializations, context lengths, sample sizes, and pooling methods.
@@ -63,7 +59,7 @@ python scripts/plantcad_eigenanalysis.py \
 # Random init of PlantCAD2-S at full context length
 python scripts/plantcad_eigenanalysis.py \
   --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 \
-    --output_dir results/sep/v14 --pooling_method mean --batch_size 32 --seq_len 8192 --force
+  --output_dir results/sep/v14 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # PlantCAD2-S at 4096bp context length
 python scripts/plantcad_eigenanalysis.py \
@@ -91,6 +87,7 @@ python scripts/plantcad_eigenanalysis.py \
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v16 --pooling_method mean \
+  --species_filter_file data/filters/plantcad1_species.txt \
   --model_path plantcad/marin_exp1729__pcv1_600m_c512__checkpoints \
   --model_subfolder local_store/checkpoints/plantcad-train-600m-r16-a1bc43/hf/step-26782 \
   --batch_size 32 --seq_len 512 --force
@@ -105,6 +102,7 @@ python scripts/plantcad_eigenanalysis.py \
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v17 \
+  --species_filter_file data/filters/plantcad1_species.txt \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.0-A_qwen-F8.2e+16-P25M-T810M-E1-56b128/hf/step-6184 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force 
@@ -112,6 +110,7 @@ python scripts/plantcad_eigenanalysis.py \
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v18 \
+  --species_filter_file data/filters/plantcad1_species.txt \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.0-A_qwen-F3.3e+16-P9.4M-T746M-E1-c98aae/hf \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
@@ -121,6 +120,7 @@ python scripts/plantcad_eigenanalysis.py \
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v19 \
+  --species_filter_file data/filters/plantcad1_species.txt \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.5-A_qwen-F2.0e+15-P805.3K-T207M-E1-96174b/hf/step-6333 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
@@ -128,6 +128,7 @@ python scripts/plantcad_eigenanalysis.py \
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v20 \
+  --species_filter_file data/filters/plantcad1_species.txt \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.5-A_qwen-F2.0e+15-P74.6K-T1.1B-E1-b7ce45/hf/step-8166 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
@@ -136,6 +137,7 @@ python scripts/plantcad_eigenanalysis.py \
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v21 \
+  --species_filter_file data/filters/plantcad1_species.txt \
   --model_path  plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_isoflop_v1.5-A_qwen-F1.0e+16-P805.3K-T1.0B-E1-4d9c41/hf/step-7917 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
@@ -162,12 +164,16 @@ for i in "${!checkpoints[@]}"; do
   python scripts/plantcad_eigenanalysis.py \
     --source marin --n_samples 512 1024 4096 16384 65536 262144 \
     --output_dir "results/sep/v${version}" \
+    --species_filter_file data/filters/plantcad1_species.txt \
     --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
     --model_subfolder "checkpoints/${checkpoint}" \
     --pooling_method mean --batch_size 32 --seq_len 4096 --force
 done
 
-# Species filtering experiments, cf. https://github.com/plantcad/plantcad-dev/issues/39
+# --------------------------------------------------------------------------------------------------
+# Species filter ablations on small Qwen pretrains
+# --------------------------------------------------------------------------------------------------
+# Single species filtering cf. https://github.com/plantcad/plantcad-dev/issues/39
 # Athaliana, Zmays, Gmax all show the same patterns, so only Zmays is used:
 python scripts/plantcad_eigenanalysis.py \
   --source marin --n_samples 512 1024 4096 8192 16384 32768 \
@@ -175,6 +181,14 @@ python scripts/plantcad_eigenanalysis.py \
   --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
   --model_subfolder checkpoints/plantcad_pretrain_fp32_v0.3 \
   --species_filter Zmays \
+  --pooling_method mean --batch_size 32 --seq_len 4096 --force
+# All species
+python scripts/plantcad_eigenanalysis.py \
+  --source marin --n_samples 512 1024 4096 16384 65536 262144 \
+  --output_dir results/sep/v42 \
+  --min_samples_per_class 16 \
+  --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
+  --model_subfolder checkpoints/plantcad_pretrain_fp32_v0.3 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
 ```
 

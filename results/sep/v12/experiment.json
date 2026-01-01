@@ -1,8 +1,8 @@
 {
   "version": "v12",
-  "title": "PlantCAD2-Small random init at 4096bp",
-  "description": "Randomly initialized PlantCAD2-Small at reduced context length",
-  "experiment_group": "plantcad2_context_ablation",
+  "title": "PlantCAD2-Small random init 4096bp",
+  "description": "Randomly initialized PlantCAD2-Small at 4096bp context length",
+  "experiment_group": "plantcad2_baseline",
 
   "analysis__method": "model_activation_pca",
   "analysis__context_length": 4096,
@@ -21,7 +21,7 @@
 
   "data__modality": "dna",
   "data__kingdom": "plants",
-  "data__dataset": "plantcad",
+  "data__dataset": "plantcad/Angiosperm_65_genomes_8192bp",
   "data__split": "train",
   "data__species_filter": "all",
   "data__species_filter_value": null,
