@@ -46,7 +46,9 @@ from sklearn.metrics import (
     average_precision_score,
 )
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
 from tqdm import tqdm
 from transformers import AutoConfig, AutoModel, AutoModelForCausalLM, AutoModelForMaskedLM, AutoTokenizer
 
@@ -1510,9 +1512,11 @@ def train_classifier(
     min_samples_per_class: int = 2,
     verbose: bool = True,
     log_class_info: bool = False,
+    eval_on_train: bool = False,
+    max_samples: int = None,
 ) -> ClassificationResult:
     """
-    Train a LightGBM classifier on PC features for any target.
+    Train a classifier on PC features for any target.
     
     Args:
         X_pca: PC-projected features (n_samples, n_components)
@@ -1524,6 +1528,8 @@ def train_classifier(
         min_samples_per_class: Minimum samples per class (filters rare classes)
         verbose: Print detailed results
         log_class_info: Print class summary and filtering info
+        eval_on_train: If True, evaluate on training data (for memorization tests) and use LogisticRegression
+        max_samples: Maximum number of samples to use for training (if None, use all samples)
         
     Returns:
         ClassificationResult with metrics and feature importances
@@ -1543,6 +1549,15 @@ def train_classifier(
         y = np.asarray(labels)
         class_names = class_names or [str(i) for i in sorted(np.unique(y))]
     
+    # Subsample data if max_samples is set
+    if max_samples is not None and len(y) > max_samples:
+        rng_subsample = np.random.default_rng(seed)
+        subsample_idx = rng_subsample.choice(len(y), size=max_samples, replace=False)
+        X_pca = X_pca[subsample_idx]
+        y = y[subsample_idx]
+        if log_class_info:
+            print(f"[{target_name}] Subsampled from {len(labels)} to {max_samples} examples")
+    
     n_components = X_pca.shape[1]
     
     # Filter classes with insufficient samples
@@ -1555,13 +1570,24 @@ def train_classifier(
         log_info=log_class_info,
     )
     
-    # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_pca, y, test_size=test_size, random_state=seed, stratify=y
-    )
+    # Train/test split (or use full dataset for memorization tests)
+    if eval_on_train:
+        X_train, X_test, y_train, y_test = X_pca, X_pca, y, y
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_pca, y, test_size=test_size, random_state=seed, stratify=y
+        )
     
-    # Train model
-    model = lgb.LGBMClassifier(random_state=seed, verbose=-1, n_jobs=-1)
+    # Train model (use LogisticRegression for memorization tests, LightGBM otherwise)
+    if eval_on_train:
+        model = Pipeline([
+            ('scaler', StandardScaler()),
+            # Regularize very weakly for sequence identification (i.e. set high C for low regularization);
+            # ablations show that C must be beyond at least ~1e6 to avoid washing out memorization patterns.
+            ('classifier', LogisticRegression(random_state=seed, C=1e9, max_iter=1000, n_jobs=-1))
+        ])
+    else:
+        model = lgb.LGBMClassifier(random_state=seed, verbose=-1, n_jobs=-1)
     model.fit(X_train, y_train)
     
     # Evaluate
@@ -1602,6 +1628,14 @@ def train_classifier(
     if verbose:
         print(f"\n[{target_name}] n_classes={n_classes}, acc={accuracy:.3f}, f1={f1_macro:.3f}, roc_auc={roc_auc_macro:.3f}, auprc={auprc_macro:.3f}")
     
+    # Extract feature importances (LightGBM) or average coefficients (LogisticRegression)
+    if hasattr(model, 'feature_importances_'):
+        feature_importances = model.feature_importances_
+    else:
+        # For LogisticRegression (in Pipeline), use average absolute coefficient across classes
+        classifier = model.named_steps['classifier']
+        feature_importances = np.mean(np.abs(classifier.coef_), axis=0)
+    
     return ClassificationResult(
         target_name=target_name,
         n_components=n_components,
@@ -1611,7 +1645,7 @@ def train_classifier(
         roc_auc_macro=roc_auc_macro,
         auprc_macro=auprc_macro,
         class_names=class_names,
-        feature_importances=model.feature_importances_,
+        feature_importances=feature_importances,
     )
 
 
@@ -1635,11 +1669,13 @@ def analyze_pc_predictivity(
     seed: int = 42,
     output_dir: str = None,
     min_samples_per_class: int = 2,
+    sequence_identity_sample_fraction_per_class: float = 0.01,
+    sequence_identity_max_samples: int = 10000,
 ) -> dict[str, PCScalingResult]:
     """
     Analyze how classification performance scales with number of PCs.
     
-    For each target (species, GC, repeats, k-mer entropy, dinucleotides),
+    For each target (species, sequence_identity, GC, repeats, k-mer entropy, dinucleotides),
     trains classifiers using increasing numbers of PCs to reveal which
     targets are captured by early vs. late components.
     
@@ -1652,6 +1688,8 @@ def analyze_pc_predictivity(
         seed: Random seed
         output_dir: Directory to save plots (if None, plots are not saved)
         min_samples_per_class: Minimum samples per class (filters rare classes)
+        sequence_identity_sample_fraction_per_class: Target fraction of samples per class for sequence_identity task random grouping (default: 0.01 = 100 groups)
+        sequence_identity_max_samples: Maximum number of samples to use for sequence_identity task (default: 10000)
         
     Returns:
         Dict mapping target_name -> PCScalingResult
@@ -1688,6 +1726,14 @@ def analyze_pc_predictivity(
     y_species = le.fit_transform(species)
     targets['species'] = (y_species, list(le.classes_))
     
+    # Random sequence grouping (memorization test for sequence_identity task)
+    n_random_groups = int(1 / sequence_identity_sample_fraction_per_class)
+    # Ensure n_random_groups is no greater than the number of sequences
+    n_random_groups = min(n_random_groups, len(sequences))
+    rng_groups = np.random.default_rng(seed)
+    random_labels = rng_groups.integers(0, n_random_groups, size=len(sequences))
+    targets['sequence_identity'] = (random_labels, [f"group_{i}" for i in range(n_random_groups)])
+    
     for feat_name, values in seq_features.items():
         labels, bin_names = discretize_feature(values, n_bins=n_bins)
         targets[feat_name] = (labels, bin_names)
@@ -1696,6 +1742,10 @@ def analyze_pc_predictivity(
     results = {}
     for target_name, (labels, class_names) in targets.items():
         accs, f1s, roc_aucs, auprcs, n_classes_list = [], [], [], [], []
+        # Use train set evaluation and logistic regression for memorization test
+        eval_on_train = (target_name == 'sequence_identity')
+        # Limit data for sequence_identity task
+        max_samples = sequence_identity_max_samples if target_name == 'sequence_identity' else None
         for i, n_comp in enumerate(n_components_list):
             # Use random baseline for n_components=0
             X_subset = X_random if n_comp == 0 else X_pca_full[:, :n_comp]
@@ -1708,6 +1758,8 @@ def analyze_pc_predictivity(
                 min_samples_per_class=min_samples_per_class,
                 verbose=False,
                 log_class_info=(i == 0),  # Only log for first n_comp
+                eval_on_train=eval_on_train,
+                max_samples=max_samples,
             )
             accs.append(res.accuracy)
             f1s.append(res.f1_macro)
@@ -1768,7 +1820,7 @@ def plot_pc_scaling_curves(
     """
     # Group targets by type for cleaner visualization
     groups = {
-        'primary_tasks': ['species', 'gc_content', 'repeat_fraction'],
+        'primary_tasks': ['species', 'sequence_identity', 'gc_content', 'repeat_fraction'],
         'kmer_tasks': ['kmer_entropy_1', 'kmer_entropy_3', 'kmer_entropy_9'],
         'dinucleotide_tasks': [k for k in results.keys() if k.startswith('dinuc_')],
     }

@@ -52,28 +52,33 @@ See `results/schemas/experiment_schema.json` for the full metadata schema and ea
 
 ```bash
 # PlantCAD2-S at full context length
+rm -rf results/sep/v13/!(experiment.json)
 python scripts/decompose.py \
-  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 \
   --output_dir results/sep/v13 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # Random init of PlantCAD2-S at full context length
+rm -rf results/sep/v14/!(experiment.json)
 python scripts/decompose.py \
-  --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 \
   --output_dir results/sep/v14 --pooling_method mean --batch_size 32 --seq_len 8192 --force
 
 # PlantCAD2-S at 4096bp context length
+rm -rf results/sep/v15/!(experiment.json)
 python scripts/decompose.py \
-  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 \
   --output_dir results/sep/v15 --pooling_method mean --batch_size 64 --seq_len 4096 --force
 
 # PlantCAD2-S at 4096bp context length with random init
+rm -rf results/sep/v12/!(experiment.json)
 python scripts/decompose.py \
-  --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --source plantcad_rand --n_samples 128 256 512 1024 4096 16384 65536 \
   --output_dir results/sep/v12 --pooling_method mean --batch_size 64 --seq_len 4096 --force
 
 # PlantCAD2-S at full context length using validation split rather than train split
+rm -rf results/sep/v11/!(experiment.json)
 python scripts/decompose.py \
-  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 262144 \
+  --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 \
   --output_dir results/sep/v11 --pooling_method mean --batch_size 32 --seq_len 8192 --split validation --force
 ```
 
@@ -84,6 +89,7 @@ python scripts/decompose.py \
 # PoC model
 # ------------------------------------------------------------------------------------------------
 # For PoC 512bp model from https://github.com/marin-community/marin/issues/1729:
+rm -rf results/sep/v16/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v16 --pooling_method mean \
@@ -99,6 +105,7 @@ python scripts/decompose.py \
 
 ## Large width (original)
 ### Largest FLOP budget
+rm -rf results/sep/v17/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v17 \
@@ -107,6 +114,7 @@ python scripts/decompose.py \
   --model_subfolder checkpoints/plantcad_isoflop_v1.0-A_qwen-F8.2e+16-P25M-T810M-E1-56b128/hf/step-6184 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force 
 ### Smallest FLOP budget
+rm -rf results/sep/v18/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v18 \
@@ -117,6 +125,7 @@ python scripts/decompose.py \
 
 ## Small width (tiny models)
 ### Smallest FLOP budget
+rm -rf results/sep/v19/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v19 \
@@ -125,6 +134,7 @@ python scripts/decompose.py \
   --model_subfolder checkpoints/plantcad_isoflop_v1.5-A_qwen-F2.0e+15-P805.3K-T207M-E1-96174b/hf/step-6333 \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
 ### Smallest FLOP budget + smallest params
+rm -rf results/sep/v20/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v20 \
@@ -134,6 +144,7 @@ python scripts/decompose.py \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
   
 ### Largest FLOP budget
+rm -rf results/sep/v21/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v21 \
@@ -160,7 +171,7 @@ versions=(22 23 24 25 26)
 for i in "${!checkpoints[@]}"; do
   checkpoint="${checkpoints[$i]}"
   version="${versions[$i]}"
-
+  rm -rf results/sep/v${version}/!(experiment.json)
   python scripts/decompose.py \
     --source marin --n_samples 512 1024 4096 16384 65536 262144 \
     --output_dir "results/sep/v${version}" \
@@ -175,6 +186,7 @@ done
 # --------------------------------------------------------------------------------------------------
 # Single species filtering cf. https://github.com/plantcad/plantcad-dev/issues/39
 # Athaliana, Zmays, Gmax all show the same patterns, so only Zmays is used:
+rm -rf results/sep/v27/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 8192 16384 32768 \
   --output_dir results/sep/v27 \
@@ -183,6 +195,7 @@ python scripts/decompose.py \
   --species_filter Zmays \
   --pooling_method mean --batch_size 32 --seq_len 4096 --force
 # All species
+rm -rf results/sep/v42/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 16384 65536 262144 \
   --output_dir results/sep/v42 \
@@ -202,6 +215,7 @@ python scripts/decompose.py \
 # - Crubella: Capsella rubella
 # - Esalsugineum: Eutrema salsugineum
 # Note there are only 107,865 sequences remaining after filtering.
+rm -rf results/sep/v38/!(experiment.json)
 python scripts/decompose.py \
   --source gpn --n_samples 8192 16384 65536 98304 \
   --output_dir results/sep/v38 \
@@ -223,9 +237,9 @@ Experiments from previously trained or re-trained models on [songlab/gpn-animal-
 Species were mapped to this dataset in [eczech/gpn-animal-promoter-dataset](https://huggingface.co/datasets/eczech/gpn-animal-promoter-dataset) via the pipeline and data in [eric-czech/gpn-animal-promoter-dataset-metadata](https://huggingface.co/datasets/eric-czech/gpn-animal-promoter-dataset-metadata).
 
 ```bash
-
 # Run on species subset
 # Note: only 152624 records remain after species filtering
+rm -rf results/sep/v28/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 4096 16384 65536 152624 \
   --output_dir results/sep/v28 \
@@ -238,6 +252,7 @@ python scripts/decompose.py \
   --pooling_method mean --batch_size 512 --seq_len 512
 
 # Run on all species
+rm -rf results/sep/v31/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 4096 16384 65536 262144 \
   --output_dir results/sep/v31 \
@@ -248,6 +263,19 @@ python scripts/decompose.py \
   --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
   --model_subfolder checkpoints/gpn_promoter_pretrain_c512_v0.2 \
   --pooling_method mean --batch_size 512 --seq_len 512
+
+# Random baseline
+rm -rf results/sep/v44/!(experiment.json)
+python scripts/decompose.py \
+  --source marin_rand --n_samples 512 4096 16384 65536 152624 \
+  --output_dir results/sep/v44 \
+  --dataset_path eczech/gpn-animal-promoter-dataset \
+  --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
+  --species_column organism \
+  --species_filter_file data/filters/gpn_star_extended_species.txt \
+  --model_path plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints \
+  --model_subfolder checkpoints/gpn_promoter_pretrain_c512_v0.2 \
+  --pooling_method mean --batch_size 512 --seq_len 512
 ```
 
 NTv2 experiments:
@@ -255,6 +283,7 @@ NTv2 experiments:
 
 ```bash
 # NTv2 + multi-species genomes
+rm -rf results/sep/v32/!(experiment.json)
 python scripts/decompose.py \
   --source ntv2 --n_samples 4096 8192 16384 \
   --output_dir results/sep/v32 \
@@ -271,6 +300,7 @@ python scripts/decompose.py \
   --pooling_method mean --batch_size 16 --seq_len 8192
 
 # NTv2 + animal promoter dataset
+rm -rf results/sep/v33/!(experiment.json)
 python scripts/decompose.py \
   --source ntv2 --n_samples 4096 8192 16384 \
   --output_dir results/sep/v33 \
@@ -286,6 +316,7 @@ python scripts/decompose.py \
 
 # AgroNT + PlantCAD2 dataset; use 6144bp sequences for 1024 tokens, see:
 # https://huggingface.co/InstaDeepAI/agro-nucleotide-transformer-1b
+rm -rf results/sep/v34/!(experiment.json)
 python scripts/decompose.py \
   --source ntv2 --n_samples 16384 32768 65536 \
   --output_dir results/sep/v34 \
@@ -302,6 +333,7 @@ python scripts/decompose.py \
 Hyena experiments:
 
 ```bash
+rm -rf results/sep/v37/!(experiment.json)
 python scripts/decompose.py \
   --source hyena --n_samples 16384 65536 262144 \
   --output_dir results/sep/v37 \
@@ -326,6 +358,7 @@ glm-experiments runs:
 # python -m pip install --no-deps -e .
 # ------
 # Filtered to 65 species
+rm -rf results/sep/v39/!(experiment.json)
 python scripts/decompose.py \
   --source glmexp --n_samples 16384 65536 262144 \
   --output_dir results/sep/v39 \
@@ -338,6 +371,7 @@ python scripts/decompose.py \
   --pooling_method mean --batch_size 1024 --seq_len 512
 
 # No species filtering
+rm -rf results/sep/v40/!(experiment.json)
 python scripts/decompose.py \
   --source glmexp --n_samples 16384 65536 262144 \
   --min_samples_per_class 16 \
@@ -350,9 +384,23 @@ python scripts/decompose.py \
   --pooling_method mean --batch_size 1024 --seq_len 512
 
 # GPN-star species + human and a couple others:
+rm -rf results/sep/v41/!(experiment.json)
 python scripts/decompose.py \
   --source glmexp --n_samples 16384 32768 131072 \
   --output_dir results/sep/v41 \
+  --dataset_path eczech/gpn-animal-promoter-dataset \
+  --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
+  --species_column organism \
+  --species_filter_file data/filters/gpn_star_extended_species.txt \
+  --dtype bfloat16 --tokenization_mode strict \
+  --split train \
+  --pooling_method mean --batch_size 1024 --seq_len 512
+
+# Random baseline
+rm -rf results/sep/v43/!(experiment.json)
+python scripts/decompose.py \
+  --source glmexp_rand --n_samples 16384 32768 131072 \
+  --output_dir results/sep/v43 \
   --dataset_path eczech/gpn-animal-promoter-dataset \
   --dataset_revision f009db443a914d4113922e3028de0666b85c24d6 \
   --species_column organism \
@@ -368,6 +416,7 @@ Experiments on [Salesforce/wikitext](https://huggingface.co/datasets/Salesforce/
 
 ```bash
 # Wikitext + very small-scale Qwen local pretrain
+rm -rf results/sep/v29/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 512 1024 4096 8192 16384 \
   --output_dir results/sep/v29 \
@@ -382,6 +431,7 @@ python scripts/decompose.py \
   --pooling_method mean --batch_size 64 --seq_len 4096
   
 # Qwen2-1.5B + DCLM-Edu
+rm -rf results/sep/v30/!(experiment.json)
 python scripts/decompose.py \
 --source marin --n_samples 512 1024 4096 8192 16384 \
   --output_dir results/sep/v30 \
@@ -395,6 +445,7 @@ python scripts/decompose.py \
   --pooling_method mean --batch_size 16 --seq_len 4096
 
 # Qwen2-1.5B + DCLM-Baseline
+rm -rf results/sep/v35/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 16384 \
   --output_dir results/sep/v35 \
@@ -408,6 +459,7 @@ python scripts/decompose.py \
   --pooling_method mean --batch_size 16 --seq_len 4096
 
 # Qwen2-1.5B + StarCoder 
+rm -rf results/sep/v36/!(experiment.json)
 python scripts/decompose.py \
   --source marin --n_samples 16384 \
   --output_dir results/sep/v36 \
