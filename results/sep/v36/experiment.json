@@ -1,6 +1,6 @@
 {
   "version": "v36",
-  "title": "Qwen2-1.5B StarCoder Python",
+  "title": "Qwen2-1.5B c4096 StarCoder Python",
   "description": "Pre-trained Qwen2-1.5B eigenspectrum on StarCoder Python code dataset",
   "experiment_group": "text_baseline",
 

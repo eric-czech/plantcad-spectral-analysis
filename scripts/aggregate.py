@@ -92,16 +92,36 @@ def cmd_aggregate_sep_results(args: argparse.Namespace) -> None:
     print(f"Wrote {len(spectral_df)} rows to {spectral_path}")
 
 
+def cmd_run_all(args: argparse.Namespace) -> None:
+    """Run all aggregation commands."""
+    print("Running all aggregations...")
+    print("\n" + "="*60)
+    print("1. Aggregating SEP results...")
+    print("="*60)
+    cmd_aggregate_sep_results(args)
+    
+    print("\n" + "="*60)
+    print("All aggregations complete!")
+    print("="*60)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Process experiment results")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("aggregate_sep_results", help="Aggregate results from results/sep")
+    
+    subparsers.add_parser(
+        "run_all",
+        help="Run all aggregation commands",
+    )
 
     args = parser.parse_args()
 
     if args.command == "aggregate_sep_results":
         cmd_aggregate_sep_results(args)
+    elif args.command == "run_all":
+        cmd_run_all(args)
 
 
 if __name__ == "__main__":

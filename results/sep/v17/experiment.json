@@ -1,6 +1,6 @@
 {
   "version": "v17",
-  "title": "Marin IsoFLOP large width, highest FLOP budget",
+  "title": "Marin IsoFLOP-25M 4096bp Angiosperm 65k",
   "description": "IsoFLOP model with largest compute budget (8.2e16) and original width (25M params)",
   "experiment_group": "marin_isoflop_large_width",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
   "analysis__max_sample_size": 262144,
   "analysis__max_rank": 512,
+  "analysis__membership_split": "validation",
 
   "model__name": "plantcad_isoflop_v1.0-A_qwen-F8.2e+16-P25M-T810M",
   "model__type": "CLM",

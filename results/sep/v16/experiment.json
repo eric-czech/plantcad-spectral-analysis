@@ -1,6 +1,6 @@
 {
   "version": "v16",
-  "title": "Marin PoC 600M model at 512bp",
+  "title": "Marin-619M 512bp Angiosperm 65k",
   "description": "Proof-of-concept Marin model from early training experiments",
   "experiment_group": "marin_poc",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
   "analysis__max_sample_size": 262144,
   "analysis__max_rank": 1408,
+  "analysis__membership_split": "validation",
 
   "model__name": "plantcad-train-600m-r16",
   "model__type": "CLM",

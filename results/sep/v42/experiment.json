@@ -1,6 +1,6 @@
 {
   "version": "v42",
-  "title": "Marin Qwen pretrain baseline - all 65 species",
+  "title": "Marin-9.5M 4096bp Angiosperm 65sp",
   "description": "Same as v22 but using all 65 species without filtering (for comparison with species-filtered experiments)",
   "experiment_group": "marin_species_filter",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
   "analysis__max_sample_size": 262144,
   "analysis__max_rank": 384,
+  "analysis__membership_split": "validation",
   "analysis__min_samples_per_class": 16,
 
   "model__name": "plantcad_pretrain_fp32_v0.3",

@@ -1,6 +1,6 @@
 {
   "version": "v27",
-  "title": "Marin Qwen pretrain filtered to Zmays",
+  "title": "Marin-9.5M 4096bp Angiosperm 1sp (Zmays)",
   "description": "Eigenspectrum on Zmays (maize) sequences only to test species-specific patterns",
   "experiment_group": "marin_species_filter",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [512, 1024, 4096, 8192, 16384, 32768],
   "analysis__max_sample_size": 32768,
   "analysis__max_rank": 384,
+  "analysis__membership_split": "validation",
 
   "model__name": "plantcad_pretrain_fp32_v0.3",
   "model__type": "CLM",

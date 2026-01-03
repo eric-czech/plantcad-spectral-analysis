@@ -1,6 +1,6 @@
 {
   "version": "v23",
-  "title": "Marin Qwen pretrain with high homology simulation",
+  "title": "Marin-9.5M (sim-high) 4096bp Angiosperm 65k",
   "description": "Qwen pretrained on sequences with simulated high homology (attractor_ratio=0.2, injection_rate=0.8)",
   "experiment_group": "marin_simulation",
 

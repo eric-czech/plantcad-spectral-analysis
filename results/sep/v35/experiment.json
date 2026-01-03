@@ -1,6 +1,6 @@
 {
   "version": "v35",
-  "title": "Qwen2-1.5B DCLM-Baseline",
+  "title": "Qwen2-1.5B c4096 DCLM-Baseline",
   "description": "Pre-trained Qwen2-1.5B eigenspectrum on DCLM-Baseline web text dataset",
   "experiment_group": "text_baseline",
 

@@ -1,6 +1,6 @@
 {
   "version": "v25",
-  "title": "Marin Qwen pretrain with random simulation",
+  "title": "Marin-9.5M (sim-rand) 4096bp Angiosperm 65k",
   "description": "Qwen pretrained on fully randomized sequences (probability=1.0)",
   "experiment_group": "marin_simulation",
 

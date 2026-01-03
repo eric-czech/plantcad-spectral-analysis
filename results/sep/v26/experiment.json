@@ -1,6 +1,6 @@
 {
   "version": "v26",
-  "title": "Marin Qwen random init baseline",
+  "title": "Marin-9.5M (random) 4096bp Angiosperm 65k",
   "description": "Randomly initialized Qwen model without any training as baseline comparison",
   "experiment_group": "marin_simulation",
 

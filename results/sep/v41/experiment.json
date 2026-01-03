@@ -1,6 +1,6 @@
 {
   "version": "v41",
-  "title": "GLM-Experiments animal promoter GPN-star extended species",
+  "title": "GLM-Experiments 512bp GPN animal promoter 9M",
   "description": "GLM-Experiments model on animal promoter dataset filtered to 6 GPN-star extended species (C. elegans, C. jacchus, D. melanogaster, F. heteroclitus, H. sapiens, M. musculus)",
   "experiment_group": "animals_promoter",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [16384, 32768, 131072],
   "analysis__max_sample_size": 131072,
   "analysis__max_rank": 1024,
+  "analysis__membership_split": "validation",
 
   "model__name": "glm-experiments",
   "model__type": "CLM",

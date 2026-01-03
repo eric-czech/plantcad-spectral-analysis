@@ -1,6 +1,6 @@
 {
   "version": "v39",
-  "title": "GLM-Experiments animal promoter 65 species",
+  "title": "GLM-Experiments 512bp GPN animal promoter 65sp",
   "description": "GLM-Experiments model on animal promoter dataset filtered to 65 most common species",
   "experiment_group": "animals_promoter",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [16384, 65536, 262144],
   "analysis__max_sample_size": 262144,
   "analysis__max_rank": 1024,
+  "analysis__membership_split": "validation",
 
   "model__name": "glm-experiments",
   "model__type": "CLM",

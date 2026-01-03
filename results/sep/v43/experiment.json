@@ -1,0 +1,34 @@
+{
+  "version": "v43",
+  "title": "GLM-Experiments (random) 512bp GPN animal promoter 6sp",
+  "description": "Random baseline for GLM-Experiments model on animal promoter dataset filtered to 6 GPN-star extended species (C. elegans, C. jacchus, D. melanogaster, F. heteroclitus, H. sapiens, M. musculus)",
+  "experiment_group": "animals_promoter",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 512,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [16384, 32768, 131072],
+  "analysis__max_sample_size": 131072,
+  "analysis__max_rank": 1024,
+  "analysis__membership_split": "validation",
+
+  "model__name": "glm-experiments",
+  "model__type": "CLM",
+  "model__source": "glmexp",
+  "model__training_status": "random",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": null,
+
+  "data__modality": "dna",
+  "data__kingdom": "animals",
+  "data__dataset": "eczech/gpn-animal-promoter-dataset",
+  "data__split": "train",
+  "data__species_filter": "species_subset",
+  "data__species_filter_value": "gpn_star_extended_species.txt",
+
+  "reference__github_issue": null,
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "gonzalobenegas/dev-glm-experiments-logs"
+}
+

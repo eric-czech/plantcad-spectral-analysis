@@ -1,6 +1,6 @@
 {
   "version": "v13",
-  "title": "PlantCAD2-Small baseline 8192bp",
+  "title": "PlantCAD2-S 8192bp Angiosperm 65k",
   "description": "PlantCAD2-Small trained model at full context length",
   "experiment_group": "plantcad2_baseline",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [128, 256, 512, 1024, 4096, 16384, 65536, 262144],
   "analysis__max_sample_size": 262144,
   "analysis__max_rank": 768,
+  "analysis__membership_split": "validation",
 
   "model__name": "PlantCAD2-Small",
   "model__type": "MLM",

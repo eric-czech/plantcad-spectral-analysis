@@ -1,0 +1,35 @@
+{
+  "version": "v44",
+  "title": "Marin-9.5M (random) 512bp GPN animal promoter 6sp",
+  "description": "Random baseline for Qwen model on animal promoter data filtered to 6 GPN-star extended species (C. elegans, C. jacchus, D. melanogaster, F. heteroclitus, H. sapiens, M. musculus)",
+  "experiment_group": "animals_promoter",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 512,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [512, 4096, 16384, 65536, 152624],
+  "analysis__max_sample_size": 152624,
+  "analysis__max_rank": 384,
+  "analysis__membership_split": "validation",
+
+  "model__name": "gpn_promoter_pretrain_c512_v0.2",
+  "model__type": "CLM",
+  "model__source": "marin",
+  "model__training_status": "random",
+  "model__flop_budget": null,
+  "model__width_class": null,
+  "model__simulation_mode": null,
+
+  "data__modality": "dna",
+  "data__kingdom": "animals",
+  "data__dataset": "eczech/gpn-animal-promoter-dataset",
+  "data__split": "train",
+  "data__species_filter": "species_subset",
+  "data__species_filter_value": "gpn_star_extended_species.txt",
+
+  "reference__github_issue": null,
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints"
+}
+
+

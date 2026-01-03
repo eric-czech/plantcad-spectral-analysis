@@ -45,13 +45,11 @@ from sklearn.metrics import (
     roc_auc_score,
     average_precision_score,
 )
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
 from transformers import AutoConfig, AutoModel, AutoModelForCausalLM, AutoModelForMaskedLM, AutoTokenizer
-
 
 
 # Disable tokenizers parallelism to avoid deadlocks with multiprocessing
@@ -114,6 +112,7 @@ UNKNOWN_SPECIES = "UNKNOWN"
 PoolingMethod = Literal["single_token", "mean", "max"]
 TokenizationMode = Literal["strict", "lenient"]
 FeatureSource = Literal["sequence", "plantcad", "plantcad_rand", "marin", "marin_rand", "ntv2", "ntv2_rand", "hyena", "hyena_rand", "gpn", "gpn_rand", "glmexp", "glmexp_rand"]
+ModelKind = Literal["clm", "mlm"]  # causal language model or masked language model
 
 
 # =============================================================================
@@ -236,6 +235,8 @@ class AnalysisResults:
     max_sequences: list[str]
     max_species: list[str]
     max_pca: PCA
+    # Optional membership data (from different split, no species filtering)
+    membership_data_matrix: np.ndarray | None = None
 
 
 @njit(parallel=True)
@@ -365,11 +366,11 @@ def _load_model_and_tokenizer(
     return model, tokenizer
 
 
-def load_plantcad_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
+def load_plantcad_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer, ModelKind]:
     """Load PlantCAD model and tokenizer."""
     model_path = args.model_path if args.model_path is not None else PLANTCAD_MODEL_PATH
     random_init = args.source == "plantcad_rand"
-    return _load_model_and_tokenizer(
+    model, tokenizer = _load_model_and_tokenizer(
         model_path=model_path,
         model_class=AutoModelForMaskedLM,
         device=args.device,
@@ -379,13 +380,14 @@ def load_plantcad_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
         revision=args.model_revision,
         source=args.source,
     )
+    return model, tokenizer, "mlm"
 
 
-def load_marin_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
+def load_marin_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer, ModelKind]:
     """Load Marin model and tokenizer."""
     model_path = args.model_path if args.model_path is not None else MARIN_MODEL_PATH
     random_init = args.source == "marin_rand"
-    return _load_model_and_tokenizer(
+    model, tokenizer = _load_model_and_tokenizer(
         model_path=model_path,
         model_class=AutoModelForCausalLM,
         device=args.device,
@@ -395,15 +397,16 @@ def load_marin_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
         revision=args.model_revision,
         source=args.source,
     )
+    return model, tokenizer, "clm"
 
 
-def load_ntv2_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
+def load_ntv2_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer, ModelKind]:
     """Load Nucleotide Transformer v2 model and tokenizer."""
     model_path = args.model_path if args.model_path is not None else NTV2_MODEL_PATH
     random_init = args.source == "ntv2_rand"
     if args.dtype != torch.float32:
         raise ValueError("NTv2 model only supports float32 dtype")
-    return _load_model_and_tokenizer(
+    model, tokenizer = _load_model_and_tokenizer(
         model_path=model_path,
         model_class=AutoModelForMaskedLM,
         device=args.device,
@@ -413,15 +416,16 @@ def load_ntv2_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
         revision=args.model_revision,
         source=args.source,
     )
+    return model, tokenizer, "mlm"
 
 
-def load_hyena_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
+def load_hyena_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer, ModelKind]:
     """Load Hyena model and tokenizer."""
     model_path = args.model_path if args.model_path is not None else HYENA_MODEL_PATH
     random_init = args.source == "hyena_rand"
     if args.dtype != torch.float32:
         raise ValueError("Hyena model only supports float32 dtype")
-    return _load_model_and_tokenizer(
+    model, tokenizer = _load_model_and_tokenizer(
         model_path=model_path,
         model_class=AutoModelForCausalLM,
         device=args.device,
@@ -431,16 +435,17 @@ def load_hyena_model(args) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
         revision=args.model_revision,
         source=args.source,
     )
+    return model, tokenizer, "clm"
 
 
-def load_gpn_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
+def load_gpn_model(args) -> tuple[AutoModel, AutoTokenizer, ModelKind]:
     """Load GPN model and tokenizer."""
     # Register AutoClass types; see:
     # https://github.com/songlab-cal/gpn?tab=readme-ov-file#quick-start
     import gpn.model
     model_path = args.model_path if args.model_path is not None else GPN_MODEL_PATH
     random_init = args.source == "gpn_rand"
-    return _load_model_and_tokenizer(
+    model, tokenizer = _load_model_and_tokenizer(
         model_path=model_path,
         model_class=AutoModel,
         device=args.device,
@@ -450,6 +455,7 @@ def load_gpn_model(args) -> tuple[AutoModelForMaskedLM, AutoTokenizer]:
         revision=args.model_revision,
         source=args.source,
     )
+    return model, tokenizer, "mlm"
 
 
 class GLMExpEmbedder(torch.nn.Module):
@@ -475,7 +481,7 @@ class GLMExpEmbedder(torch.nn.Module):
         return output
 
 
-def load_glmexp_model(args) -> tuple[GLMExpEmbedder, AutoTokenizer]:
+def load_glmexp_model(args) -> tuple[GLMExpEmbedder, AutoTokenizer, ModelKind]:
     """Load GLM-Experiments model from Lightning checkpoint and tokenizer.
     
     This function handles the complexity of loading a Lightning checkpoint
@@ -560,7 +566,7 @@ def load_glmexp_model(args) -> tuple[GLMExpEmbedder, AutoTokenizer]:
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     print(f"  Tokenizer vocab size: {len(tokenizer)}")
     
-    return model, tokenizer
+    return model, tokenizer, "clm"
 
 
 def tokenize_sequences(
@@ -644,6 +650,7 @@ def extract_model_embeddings(
     device: str,
     pooling_method: PoolingMethod,
     tokenization_mode: TokenizationMode,
+    kind: ModelKind,
 ) -> np.ndarray:
     """
     Extract hidden states from a DNA language model.
@@ -666,11 +673,12 @@ def extract_model_embeddings(
         tokenization_mode: "strict" or "lenient"
             - "strict": No padding/truncation, validate all sequences are exact length
             - "lenient": Pad/truncate to sequence_length
+        kind: Model kind ("clm" for causal, "mlm" for masked)
         
     Returns:
         Array of shape (n_samples, output_dim) with embeddings
     """
-    is_causal = isinstance(model, AutoModelForCausalLM)
+    is_causal = kind == "clm"
     slice_hidden = source.startswith("plantcad")  # Bidirectional model: slice forward half
     
     # Get expected hidden size from config
@@ -1030,17 +1038,17 @@ def convert_to_features(
     if args.source == "sequence":
         return extract_onehot_features(sequences, args.seq_len)
     elif args.source in ("plantcad", "plantcad_rand"):
-        model, tokenizer = load_plantcad_model(args)
+        model, tokenizer, kind = load_plantcad_model(args)
     elif args.source in ("marin", "marin_rand"):
-        model, tokenizer = load_marin_model(args)
+        model, tokenizer, kind = load_marin_model(args)
     elif args.source in ("ntv2", "ntv2_rand"):
-        model, tokenizer = load_ntv2_model(args)
+        model, tokenizer, kind = load_ntv2_model(args)
     elif args.source in ("hyena", "hyena_rand"):
-        model, tokenizer = load_hyena_model(args)
+        model, tokenizer, kind = load_hyena_model(args)
     elif args.source in ("gpn", "gpn_rand"):
-        model, tokenizer = load_gpn_model(args)
+        model, tokenizer, kind = load_gpn_model(args)
     elif args.source in ("glmexp", "glmexp_rand"):
-        model, tokenizer = load_glmexp_model(args)
+        model, tokenizer, kind = load_glmexp_model(args)
     else:
         raise ValueError(f"Unknown source: {args.source}")
     
@@ -1054,6 +1062,7 @@ def convert_to_features(
         pooling_method=args.pooling_method,
         tokenization_mode=args.tokenization_mode,
         sequence_length=args.seq_len,
+        kind=kind,
     )
     print(f"  Embedding matrix shape: {data_matrix.shape}")
     del model
@@ -1155,6 +1164,20 @@ def run_analysis(
     max_pca = PCA(n_components=min(max_samples, data_matrix.shape[1]), svd_solver='full')
     max_pca.fit(data_matrix)
     
+    # Load membership data if requested (different split, no species filtering)
+    membership_data_matrix = None
+    if args.membership_split is not None and args.membership_split != args.split:
+        membership_n_samples = args.membership_n_samples or max_samples
+        print(f"\nLoading membership data from split '{args.membership_split}' (no species filter)...")
+        
+        # Load from membership split without species filtering
+        membership_sequences, _ = load_raw_data(
+            n_samples=membership_n_samples,
+            species_filter=None,  # No species filtering for membership
+            args=argparse.Namespace(**{**vars(args), 'split': args.membership_split, 'seed': args.seed + 12345}),
+        )
+        membership_data_matrix = convert_to_features(sequences=membership_sequences, args=args)
+    
     return AnalysisResults(
         source=args.source,
         seq_len=args.seq_len,
@@ -1164,6 +1187,7 @@ def run_analysis(
         max_sequences=sequences,
         max_species=species,
         max_pca=max_pca,
+        membership_data_matrix=membership_data_matrix,
     )
 
 
@@ -1512,8 +1536,7 @@ def train_classifier(
     min_samples_per_class: int = 2,
     verbose: bool = True,
     log_class_info: bool = False,
-    eval_on_train: bool = False,
-    max_samples: int = None,
+    use_logistic_regression: bool = False,
 ) -> ClassificationResult:
     """
     Train a classifier on PC features for any target.
@@ -1528,8 +1551,7 @@ def train_classifier(
         min_samples_per_class: Minimum samples per class (filters rare classes)
         verbose: Print detailed results
         log_class_info: Print class summary and filtering info
-        eval_on_train: If True, evaluate on training data (for memorization tests) and use LogisticRegression
-        max_samples: Maximum number of samples to use for training (if None, use all samples)
+        use_logistic_regression: If True, use LogisticRegression instead of LightGBM
         
     Returns:
         ClassificationResult with metrics and feature importances
@@ -1549,15 +1571,6 @@ def train_classifier(
         y = np.asarray(labels)
         class_names = class_names or [str(i) for i in sorted(np.unique(y))]
     
-    # Subsample data if max_samples is set
-    if max_samples is not None and len(y) > max_samples:
-        rng_subsample = np.random.default_rng(seed)
-        subsample_idx = rng_subsample.choice(len(y), size=max_samples, replace=False)
-        X_pca = X_pca[subsample_idx]
-        y = y[subsample_idx]
-        if log_class_info:
-            print(f"[{target_name}] Subsampled from {len(labels)} to {max_samples} examples")
-    
     n_components = X_pca.shape[1]
     
     # Filter classes with insufficient samples
@@ -1570,22 +1583,15 @@ def train_classifier(
         log_info=log_class_info,
     )
     
-    # Train/test split (or use full dataset for memorization tests)
-    if eval_on_train:
-        X_train, X_test, y_train, y_test = X_pca, X_pca, y, y
-    else:
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_pca, y, test_size=test_size, random_state=seed, stratify=y
-        )
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_pca, y, test_size=test_size, random_state=seed, stratify=y
+    )
     
-    # Train model (use LogisticRegression for memorization tests, LightGBM otherwise)
-    if eval_on_train:
-        model = Pipeline([
-            ('scaler', StandardScaler()),
-            # Regularize very weakly for sequence identification (i.e. set high C for low regularization);
-            # ablations show that C must be beyond at least ~1e6 to avoid washing out memorization patterns.
-            ('classifier', LogisticRegression(random_state=seed, C=1e9, max_iter=1000, n_jobs=-1))
-        ])
+    # Train model
+    if use_logistic_regression:
+        # model = LogisticRegression(C=np.inf, random_state=seed, max_iter=1000, n_jobs=-1)
+        model = LogisticRegression(C=1, random_state=seed, max_iter=1000, n_jobs=-1)
     else:
         model = lgb.LGBMClassifier(random_state=seed, verbose=-1, n_jobs=-1)
     model.fit(X_train, y_train)
@@ -1628,13 +1634,16 @@ def train_classifier(
     if verbose:
         print(f"\n[{target_name}] n_classes={n_classes}, acc={accuracy:.3f}, f1={f1_macro:.3f}, roc_auc={roc_auc_macro:.3f}, auprc={auprc_macro:.3f}")
     
-    # Extract feature importances (LightGBM) or average coefficients (LogisticRegression)
+    # Extract feature importances
     if hasattr(model, 'feature_importances_'):
         feature_importances = model.feature_importances_
     else:
-        # For LogisticRegression (in Pipeline), use average absolute coefficient across classes
-        classifier = model.named_steps['classifier']
-        feature_importances = np.mean(np.abs(classifier.coef_), axis=0)
+        # For LogisticRegression, use mean absolute coefficients as importance
+        coef = model.coef_
+        if coef.ndim == 1:
+            feature_importances = np.abs(coef)
+        else:
+            feature_importances = np.mean(np.abs(coef), axis=0)
     
     return ClassificationResult(
         target_name=target_name,
@@ -1669,13 +1678,12 @@ def analyze_pc_predictivity(
     seed: int = 42,
     output_dir: str = None,
     min_samples_per_class: int = 2,
-    sequence_identity_sample_fraction_per_class: float = 0.01,
-    sequence_identity_max_samples: int = 10000,
+    membership_features: np.ndarray | None = None,
 ) -> dict[str, PCScalingResult]:
     """
     Analyze how classification performance scales with number of PCs.
     
-    For each target (species, sequence_identity, GC, repeats, k-mer entropy, dinucleotides),
+    For each target (species, GC, repeats, k-mer entropy, dinucleotides),
     trains classifiers using increasing numbers of PCs to reveal which
     targets are captured by early vs. late components.
     
@@ -1688,8 +1696,8 @@ def analyze_pc_predictivity(
         seed: Random seed
         output_dir: Directory to save plots (if None, plots are not saved)
         min_samples_per_class: Minimum samples per class (filters rare classes)
-        sequence_identity_sample_fraction_per_class: Target fraction of samples per class for sequence_identity task random grouping (default: 0.01 = 100 groups)
-        sequence_identity_max_samples: Maximum number of samples to use for sequence_identity task (default: 10000)
+        membership_features: Optional embedding matrix from another split for
+            membership classification (binary: train=0, membership=1)
         
     Returns:
         Dict mapping target_name -> PCScalingResult
@@ -1721,18 +1729,37 @@ def analyze_pc_predictivity(
     seq_features = extract_sequence_features(sequences)
     
     # Build targets dict: name -> (labels, class_names)
+    # Membership goes first if provided
     targets = {}
+    X_pca_membership_balanced = None
+    X_pca_train_balanced = None
+    X_random_membership = None
+    
+    if membership_features is not None:
+        n_train = data_matrix.shape[0]
+        n_membership = membership_features.shape[0]
+        n_balanced = min(n_train, n_membership)
+        print(f"\n  Membership task: {n_train} train + {n_membership} membership -> {n_balanced} each (balanced)")
+        
+        # Project membership features
+        X_pca_membership_full = pca.transform(membership_features)[:, :max_n]
+        
+        # Downsample both to balanced size
+        train_idx = rng.choice(n_train, size=n_balanced, replace=False)
+        membership_idx = rng.choice(n_membership, size=n_balanced, replace=False)
+        X_pca_train_balanced = X_pca_full[train_idx]
+        X_pca_membership_balanced = X_pca_membership_full[membership_idx]
+        
+        # train=1 (positive class), membership=0
+        y_membership = np.array([1] * n_balanced + [0] * n_balanced)
+        targets['membership'] = (y_membership, ['membership', 'train'])
+        
+        # Random baseline for membership (balanced size)
+        X_random_membership = rng.random((2 * n_balanced, 1))
+    
     le = LabelEncoder()
     y_species = le.fit_transform(species)
     targets['species'] = (y_species, list(le.classes_))
-    
-    # Random sequence grouping (memorization test for sequence_identity task)
-    n_random_groups = int(1 / sequence_identity_sample_fraction_per_class)
-    # Ensure n_random_groups is no greater than the number of sequences
-    n_random_groups = min(n_random_groups, len(sequences))
-    rng_groups = np.random.default_rng(seed)
-    random_labels = rng_groups.integers(0, n_random_groups, size=len(sequences))
-    targets['sequence_identity'] = (random_labels, [f"group_{i}" for i in range(n_random_groups)])
     
     for feat_name, values in seq_features.items():
         labels, bin_names = discretize_feature(values, n_bins=n_bins)
@@ -1742,13 +1769,19 @@ def analyze_pc_predictivity(
     results = {}
     for target_name, (labels, class_names) in targets.items():
         accs, f1s, roc_aucs, auprcs, n_classes_list = [], [], [], [], []
-        # Use train set evaluation and logistic regression for memorization test
-        eval_on_train = (target_name == 'sequence_identity')
-        # Limit data for sequence_identity task
-        max_samples = sequence_identity_max_samples if target_name == 'sequence_identity' else None
+        is_membership = (target_name == 'membership')
+        
+        # Membership uses balanced train+membership data; other tasks use train only
+        if is_membership:
+            X_pca_task = np.vstack([X_pca_train_balanced, X_pca_membership_balanced])
+        else:
+            X_pca_task = X_pca_full
+        
         for i, n_comp in enumerate(n_components_list):
-            # Use random baseline for n_components=0
-            X_subset = X_random if n_comp == 0 else X_pca_full[:, :n_comp]
+            if n_comp == 0:
+                X_subset = X_random_membership if is_membership else X_random
+            else:
+                X_subset = X_pca_task[:, :n_comp]
             res = train_classifier(
                 X_pca=X_subset,
                 labels=labels,
@@ -1757,9 +1790,8 @@ def analyze_pc_predictivity(
                 seed=seed,
                 min_samples_per_class=min_samples_per_class,
                 verbose=False,
-                log_class_info=(i == 0),  # Only log for first n_comp
-                eval_on_train=eval_on_train,
-                max_samples=max_samples,
+                log_class_info=(i == 0),
+                use_logistic_regression=is_membership,
             )
             accs.append(res.accuracy)
             f1s.append(res.f1_macro)
@@ -1820,7 +1852,7 @@ def plot_pc_scaling_curves(
     """
     # Group targets by type for cleaner visualization
     groups = {
-        'primary_tasks': ['species', 'sequence_identity', 'gc_content', 'repeat_fraction'],
+        'primary_tasks': ['species', 'gc_content', 'repeat_fraction', 'membership'],
         'kmer_tasks': ['kmer_entropy_1', 'kmer_entropy_3', 'kmer_entropy_9'],
         'dinucleotide_tasks': [k for k in results.keys() if k.startswith('dinuc_')],
     }
@@ -2062,6 +2094,10 @@ def parse_args() -> argparse.Namespace:
                         help="Directory for loading dataset (data_dir parameter for load_dataset). Default: None")
     parser.add_argument("--min_samples_per_class", type=int, default=2,
                         help="Minimum number of samples per class for classification tasks (filters rare classes). Default: 2")
+    parser.add_argument("--membership_split", type=str, choices=["train", "validation", "test"], default=None,
+                        help="If provided, load samples from this split (without species filtering) to train a membership classifier distinguishing --split from --membership_split. Default: None (disabled)")
+    parser.add_argument("--membership_n_samples", type=int, default=None,
+                        help="Number of samples to load from membership_split. Default: same as max(n_samples)")
     return parser.parse_args()
 
 
@@ -2148,6 +2184,7 @@ def _run_main(args: argparse.Namespace, n_samples_list: list[int], basename: str
         seed=results.seed,
         output_dir=args.output_dir,
         min_samples_per_class=args.min_samples_per_class,
+        membership_features=results.membership_data_matrix,
     )
     
     # Train species classifier and plot confusion matrix

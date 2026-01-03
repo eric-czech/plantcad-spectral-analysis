@@ -1,6 +1,6 @@
 {
   "version": "v37",
-  "title": "HyenaDNA-tiny animal promoter 65 species",
+  "title": "HyenaDNA-tiny 512bp GPN animal promoter 65sp",
   "description": "HyenaDNA tiny model (1k seqlen) on animal promoter dataset filtered to 65 species",
   "experiment_group": "animals_promoter",
 

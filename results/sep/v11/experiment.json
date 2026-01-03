@@ -1,6 +1,6 @@
 {
   "version": "v11",
-  "title": "PlantCAD2-Small validation split at 8192bp",
+  "title": "PlantCAD2-S 8192bp Angiosperm 65k (val)",
   "description": "Full context length eigenspectrum on validation split for PlantCAD2-Small",
   "experiment_group": "plantcad2_baseline",
 

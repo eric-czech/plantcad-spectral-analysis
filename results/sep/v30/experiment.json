@@ -1,6 +1,6 @@
 {
   "version": "v30",
-  "title": "Qwen2-1.5B on DCLM-Edu text",
+  "title": "Qwen2-1.5B c4096 DCLM-Edu",
   "description": "Pre-trained Qwen2-1.5B eigenspectrum on educational web text from DCLM-Edu",
   "experiment_group": "text_baseline",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [512, 1024, 4096, 8192, 16384],
   "analysis__max_sample_size": 16384,
   "analysis__max_rank": 1536,
+  "analysis__membership_split": "validation",
 
   "model__name": "Qwen2-1.5B",
   "model__type": "CLM",

@@ -1,6 +1,6 @@
 {
   "version": "v32",
-  "title": "NTv2-50M multi-species genomes",
+  "title": "NTv2-50M 8192bp Multi-species genomes",
   "description": "Nucleotide Transformer v2 50M on InstaDeep multi-species genomes dataset",
   "experiment_group": "animals_promoter",
 

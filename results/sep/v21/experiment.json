@@ -1,6 +1,6 @@
 {
   "version": "v21",
-  "title": "Marin IsoFLOP small width, highest FLOP budget",
+  "title": "Marin IsoFLOP-805K 4096bp Angiosperm 65k (high FLOP)",
   "description": "IsoFLOP tiny model with largest compute budget (1.0e16) and small width (805K params)",
   "experiment_group": "marin_isoflop_small_width",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [512, 1024, 4096, 16384, 65536, 262144],
   "analysis__max_sample_size": 262144,
   "analysis__max_rank": 112,
+  "analysis__membership_split": "validation",
 
   "model__name": "plantcad_isoflop_v1.5-A_qwen-F1.0e+16-P805.3K-T1.0B",
   "model__type": "CLM",

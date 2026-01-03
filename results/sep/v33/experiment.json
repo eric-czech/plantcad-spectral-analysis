@@ -1,6 +1,6 @@
 {
   "version": "v33",
-  "title": "NTv2-50M animal promoter 65 species",
+  "title": "NTv2-50M 512bp GPN animal promoter 65sp",
   "description": "Nucleotide Transformer v2 50M on animal promoter dataset filtered to 65 species",
   "experiment_group": "animals_promoter",
 

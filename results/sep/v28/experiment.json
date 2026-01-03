@@ -1,6 +1,6 @@
 {
   "version": "v28",
-  "title": "Animal promoter GPN-star species subset",
+  "title": "Marin-9.5M 512bp GPN animal promoter 9M",
   "description": "Qwen model pretrained on animal promoter data filtered to 6 GPN-star extended species",
   "experiment_group": "animals_promoter",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [512, 4096, 16384, 65536, 152624],
   "analysis__max_sample_size": 152624,
   "analysis__max_rank": 384,
+  "analysis__membership_split": "validation",
 
   "model__name": "gpn_promoter_pretrain_c512_v0.2",
   "model__type": "CLM",

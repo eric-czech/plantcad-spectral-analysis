@@ -1,6 +1,6 @@
 {
   "version": "v31",
-  "title": "Animal promoter all species",
+  "title": "Marin-9.5M 512bp GPN animal promoter 417sp",
   "description": "Qwen model pretrained on animal promoter data with all 417 species (no filtering)",
   "experiment_group": "animals_promoter",
 

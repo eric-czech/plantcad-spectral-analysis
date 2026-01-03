@@ -1,6 +1,6 @@
 {
   "version": "v29",
-  "title": "Wikitext with small Qwen pretrain",
+  "title": "Marin-48M c4096 Wikitext-2",
   "description": "Very small-scale Qwen pretrained locally on Wikitext-2",
   "experiment_group": "text_baseline",
 
@@ -10,6 +10,7 @@
   "analysis__sample_sizes": [512, 1024, 4096, 8192, 16384],
   "analysis__max_sample_size": 16384,
   "analysis__max_rank": 384,
+  "analysis__membership_split": "validation",
 
   "model__name": "wikitext_pretrain_c4096_v0.1",
   "model__type": "CLM",

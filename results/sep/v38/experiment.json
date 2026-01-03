@@ -1,6 +1,6 @@
 {
   "version": "v38",
-  "title": "GPN-Brassicales PlantCAD2 shared species",
+  "title": "GPN-Brassicales 512bp Angiosperm 3sp",
   "description": "GPN Brassicales model on PlantCAD dataset filtered to 3 shared species (Athaliana, Crubella, Esalsugineum)",
   "experiment_group": "plantcad2_baseline",
 
