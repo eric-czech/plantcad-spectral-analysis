@@ -1,6 +1,6 @@
 {
   "version": "v24",
-  "title": "Marin-9.5M (sim-kmer) 4096bp Angiosperm 65k",
+  "title": "Marin-9.5M (sim-kmer) 4096bp Angiosperm 2.6M 10sp",
   "description": "Qwen pretrained on sequences with k-mer (k=3) shuffling to break long-range dependencies",
   "experiment_group": "marin_simulation",
 

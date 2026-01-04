@@ -1,6 +1,6 @@
 {
   "version": "v18",
-  "title": "Marin IsoFLOP-9.4M 4096bp Angiosperm 65k",
+  "title": "Marin IsoFLOP-9.4M 4096bp Angiosperm 2.6M 10sp",
   "description": "IsoFLOP model with smallest compute budget (3.3e16) and original width (9.4M params)",
   "experiment_group": "marin_isoflop_large_width",
 

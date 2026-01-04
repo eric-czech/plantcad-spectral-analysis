@@ -8,43 +8,46 @@ These experiments all decompose activations from a single model using various in
 
 | Ver | Model | Dataset | Type | Init | Filter | Sim | Context | Notes |
 |-----|-------|---------|------|------|--------|-----|---------|-------|
-| v11 | PlantCAD2-S | PlantCAD | MLM | trained | all | - | 8192bp | validation split |
-| v12 | PlantCAD2-S | PlantCAD | MLM | rand | all | - | 4096bp | |
-| v13 | PlantCAD2-S | PlantCAD | MLM | trained | all | - | 8192bp | |
-| v14 | PlantCAD2-S | PlantCAD | MLM | rand | all | - | 8192bp | |
-| v15 | PlantCAD2-S | PlantCAD | MLM | trained | all | - | 4096bp | incomplete |
-| v16 | Marin-600M | PlantCAD | CLM | trained | all | - | 512bp | PoC model |
-| v17 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 8.2e16 FLOP, 25M |
-| v18 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 3.3e16 FLOP, 9.4M |
-| v19 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 2.0e15 FLOP, 805K |
-| v20 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 2.0e15 FLOP, 75K |
-| v21 | Marin-IsoFLOP | PlantCAD | CLM | trained | all | - | 4096bp | 1.0e16 FLOP, 805K |
-| v22 | Marin-Qwen | PlantCAD | CLM | trained | all | none | 4096bp | |
-| v23 | Marin-Qwen | PlantCAD | CLM | trained | all | high | 4096bp | high homology |
-| v24 | Marin-Qwen | PlantCAD | CLM | trained | all | low | 4096bp | k-mer shuffle |
-| v25 | Marin-Qwen | PlantCAD | CLM | trained | all | rand | 4096bp | random seqs |
-| v26 | Marin-Qwen | PlantCAD | CLM | rand | all | - | 4096bp | |
-| v27 | Marin-Qwen | PlantCAD | CLM | trained | single | none | 4096bp | Zmays only |
-| v28 | Marin-Qwen | Promoter | CLM | trained | 6sp | - | 512bp | GPN-star species |
-| v29 | Marin-Qwen | Wikitext | CLM | trained | - | none | 4096bp | text |
-| v30 | Qwen2-1.5B | DCLM-Edu | CLM | trained | - | - | 4096bp | text |
-| v31 | Marin-Qwen | Promoter | CLM | trained | all | - | 512bp | 417 species |
-| v32 | NTv2-50M | MultiSpecies | MLM | trained | all | - | 8192bp | |
-| v33 | NTv2-50M | Promoter | MLM | trained | 65sp | - | 512bp | |
-| v34 | AgroNT-1B | PlantCAD | MLM | trained | all | - | 6144bp | |
-| v35 | Qwen2-1.5B | DCLM-Base | CLM | trained | - | - | 4096bp | text |
-| v36 | Qwen2-1.5B | StarCoder | CLM | trained | - | - | 4096bp | text (Python) |
-| v37 | HyenaDNA-tiny | Promoter | CLM | trained | 65sp | - | 512bp | |
-| v38 | GPN-Brass | PlantCAD | MLM | trained | 3sp | - | 512bp | shared species |
-| v39 | GLM-Exp | Promoter | CLM | trained | 65sp | - | 512bp | |
-| v40 | GLM-Exp | Promoter | CLM | trained | all | - | 512bp | 417 species |
-| v41 | GLM-Exp | Promoter | CLM | trained | 6sp | - | 512bp | GPN-star species |
+| v11 | PlantCAD2-S-88M | Angiosperm 2.6M 65sp | MLM | trained | all | - | 8192bp | validation split |
+| v12 | PlantCAD2-S-88M | Angiosperm 2.6M 65sp | MLM | rand | all | - | 4096bp | |
+| v13 | PlantCAD2-S-88M | Angiosperm 2.6M 65sp | MLM | trained | all | - | 8192bp | |
+| v14 | PlantCAD2-S-88M | Angiosperm 2.6M 65sp | MLM | rand | all | - | 8192bp | |
+| v15 | PlantCAD2-S-88M | Angiosperm 2.6M 65sp | MLM | trained | all | - | 4096bp | incomplete |
+| v16 | Marin-619M | Angiosperm 2.6M 10sp | CLM | trained | 10sp | - | 512bp | PoC model |
+| v17 | Marin IsoFLOP-25M | Angiosperm 2.6M 10sp | CLM | trained | 10sp | - | 4096bp | |
+| v18 | Marin IsoFLOP-9.4M | Angiosperm 2.6M 10sp | CLM | trained | 10sp | - | 4096bp | |
+| v19 | Marin IsoFLOP-805K | Angiosperm 2.6M 10sp | CLM | trained | 10sp | - | 4096bp | |
+| v20 | Marin IsoFLOP-75K | Angiosperm 2.6M 10sp | CLM | trained | 10sp | - | 4096bp | |
+| v21 | Marin IsoFLOP-805K | Angiosperm 2.6M 10sp | CLM | trained | 10sp | - | 4096bp | high FLOP |
+| v22 | Marin-9.5M | Angiosperm 2.6M 10sp | CLM | trained | 10sp | none | 4096bp | |
+| v23 | Marin-9.5M | Angiosperm 2.6M 10sp | CLM | trained | 10sp | high | 4096bp | high homology |
+| v24 | Marin-9.5M | Angiosperm 2.6M 10sp | CLM | trained | 10sp | low | 4096bp | k-mer shuffle |
+| v25 | Marin-9.5M | Angiosperm 2.6M 10sp | CLM | trained | 10sp | rand | 4096bp | random seqs |
+| v26 | Marin-9.5M | Angiosperm 2.6M 10sp | CLM | rand | 10sp | - | 4096bp | |
+| v27 | Marin-9.5M | Angiosperm 1sp | CLM | trained | single | none | 4096bp | Zmays only |
+| v28 | Marin-9.5M | GPN Promoter 9M 6sp | CLM | trained | 6sp | - | 512bp | GPN-star species |
+| v29 | Marin-48M | Wikitext-2 | CLM | trained | - | none | c4096 | text |
+| v30 | Qwen2-1.5B | DCLM-Edu | CLM | trained | - | - | c4096 | text |
+| v31 | Marin-9.5M | GPN Promoter 417sp | CLM | trained | all | - | 512bp | |
+| v32 | NTv2-50M | Multi-species genomes | MLM | trained | all | - | 8192bp | |
+| v33 | NTv2-50M | GPN Promoter 65sp | MLM | trained | 65sp | - | 512bp | |
+| v34 | AgroNT-1B | Angiosperm 2.6M 65sp | MLM | trained | all | - | 6144bp | |
+| v35 | Qwen2-1.5B | DCLM-Baseline | CLM | trained | - | - | c4096 | text |
+| v36 | Qwen2-1.5B | StarCoder Python | CLM | trained | - | - | c4096 | text |
+| v37 | HyenaDNA-tiny | GPN Promoter 65sp | CLM | trained | 65sp | - | 512bp | |
+| v38 | GPN-Brassicales | Angiosperm 3sp | MLM | trained | 3sp | - | 512bp | shared species |
+| v39 | GLM-Experiments | GPN Promoter 65sp | CLM | trained | 65sp | - | 512bp | |
+| v40 | GLM-Experiments | GPN Promoter 417sp | CLM | trained | all | - | 512bp | |
+| v41 | GLM-Experiments | GPN Promoter 9M 6sp | CLM | trained | 6sp | - | 512bp | GPN-star species |
+| v42 | Marin-9.5M | Angiosperm 65sp | CLM | trained | all | - | 4096bp | |
+| v43 | GLM-Experiments | GPN Promoter 6sp | CLM | rand | 6sp | - | 512bp | GPN-star species |
+| v44 | Marin-9.5M | GPN Promoter 6sp | CLM | rand | 6sp | - | 512bp | GPN-star species |
 
 **Legend:**
 - **Init**: trained = pretrained weights, rand = random initialization
 - **Filter**: all = no filtering, Nsp = N species subset, single = single species
 - **Sim**: none/high/low/rand = simulation mode for training data
-- **Dataset**: PlantCAD = Angiosperm 65 genomes, Promoter = gpn-animal-promoter, MultiSpecies = InstaDeep multi_species_genomes
+- **Dataset**: Angiosperm = 65 plant genomes (2.6M samples), GPN Promoter = gpn-animal-promoter (9M sequences), Multi-species genomes = InstaDeep multi_species_genomes. Format: "Dataset [SampleSize] [SpeciesCount]"
 
 See `results/schemas/experiment_schema.json` for the full metadata schema and each `results/sep/v*/experiment.json` for complete experiment metadata.
 

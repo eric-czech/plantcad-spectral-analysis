@@ -1,6 +1,6 @@
 {
   "version": "v28",
-  "title": "Marin-9.5M 512bp GPN animal promoter 9M",
+  "title": "Marin-9.5M 512bp GPN animal promoter 9M 6sp",
   "description": "Qwen model pretrained on animal promoter data filtered to 6 GPN-star extended species",
   "experiment_group": "animals_promoter",
 

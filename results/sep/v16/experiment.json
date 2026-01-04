@@ -1,6 +1,6 @@
 {
   "version": "v16",
-  "title": "Marin-619M 512bp Angiosperm 65k",
+  "title": "Marin-619M 512bp Angiosperm 2.6M 10sp",
   "description": "Proof-of-concept Marin model from early training experiments",
   "experiment_group": "marin_poc",
 

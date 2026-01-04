@@ -1,6 +1,6 @@
 {
   "version": "v22",
-  "title": "Marin-9.5M 4096bp Angiosperm 65k",
+  "title": "Marin-9.5M 4096bp Angiosperm 2.6M 10sp",
   "description": "Qwen-based model pretrained on PlantCAD data without simulation",
   "experiment_group": "marin_simulation",
 

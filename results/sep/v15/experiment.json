@@ -1,6 +1,6 @@
 {
   "version": "v15",
-  "title": "PlantCAD2-S 4096bp Angiosperm 65k",
+  "title": "PlantCAD2-S-88M 4096bp Angiosperm 2.6M 65sp",
   "description": "Trained PlantCAD2-Small model evaluated at 4096bp context length",
   "experiment_group": "plantcad2_baseline",
 

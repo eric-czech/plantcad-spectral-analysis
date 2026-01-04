@@ -1,6 +1,6 @@
 {
   "version": "v21",
-  "title": "Marin IsoFLOP-805K 4096bp Angiosperm 65k (high FLOP)",
+  "title": "Marin IsoFLOP-805K 4096bp Angiosperm 2.6M 10sp (high FLOP)",
   "description": "IsoFLOP tiny model with largest compute budget (1.0e16) and small width (805K params)",
   "experiment_group": "marin_isoflop_small_width",
 

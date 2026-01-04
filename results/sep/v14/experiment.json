@@ -1,6 +1,6 @@
 {
   "version": "v14",
-  "title": "PlantCAD2-S (random) 8192bp Angiosperm 65k",
+  "title": "PlantCAD2-S-88M (random) 8192bp Angiosperm 2.6M 65sp",
   "description": "Randomly initialized PlantCAD2-Small at full context length",
   "experiment_group": "plantcad2_baseline",
 

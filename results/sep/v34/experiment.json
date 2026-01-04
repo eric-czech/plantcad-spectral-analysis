@@ -1,6 +1,6 @@
 {
   "version": "v34",
-  "title": "AgroNT-1B PlantCAD2 dataset",
+  "title": "AgroNT-1B 6144bp Angiosperm 2.6M 65sp",
   "description": "Agro-Nucleotide Transformer 1B on PlantCAD Angiosperm 65 genomes dataset",
   "experiment_group": "plantcad2_baseline",
 

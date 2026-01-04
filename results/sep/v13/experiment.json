@@ -1,6 +1,6 @@
 {
   "version": "v13",
-  "title": "PlantCAD2-S 8192bp Angiosperm 65k",
+  "title": "PlantCAD2-S-88M 8192bp Angiosperm 2.6M 65sp",
   "description": "PlantCAD2-Small trained model at full context length",
   "experiment_group": "plantcad2_baseline",
 
