@@ -1,6 +1,6 @@
 {
   "version": "v40",
-  "title": "GLM-Experiments 512bp GPN animal promoter 417sp",
+  "title": "GLM-Experiments-299M 512bp GPN animal promoter 417sp",
   "description": "GLM-Experiments model on animal promoter dataset with all 417 species (no filtering)",
   "experiment_group": "animals_promoter",
 

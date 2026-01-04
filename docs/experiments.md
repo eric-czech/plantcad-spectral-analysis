@@ -36,11 +36,11 @@ These experiments all decompose activations from a single model using various in
 | v36 | Qwen2-1.5B | StarCoder Python | CLM | trained | - | - | c4096 | text |
 | v37 | HyenaDNA-tiny | GPN Promoter 65sp | CLM | trained | 65sp | - | 512bp | |
 | v38 | GPN-Brassicales | Angiosperm 3sp | MLM | trained | 3sp | - | 512bp | shared species |
-| v39 | GLM-Experiments | GPN Promoter 65sp | CLM | trained | 65sp | - | 512bp | |
-| v40 | GLM-Experiments | GPN Promoter 417sp | CLM | trained | all | - | 512bp | |
-| v41 | GLM-Experiments | GPN Promoter 9M 6sp | CLM | trained | 6sp | - | 512bp | GPN-star species |
+| v39 | GLM-Experiments-299M | GPN Promoter 65sp | CLM | trained | 65sp | - | 512bp | |
+| v40 | GLM-Experiments-299M | GPN Promoter 417sp | CLM | trained | all | - | 512bp | |
+| v41 | GLM-Experiments-299M | GPN Promoter 9M 6sp | CLM | trained | 6sp | - | 512bp | GPN-star species |
 | v42 | Marin-9.5M | Angiosperm 65sp | CLM | trained | all | - | 4096bp | |
-| v43 | GLM-Experiments | GPN Promoter 6sp | CLM | rand | 6sp | - | 512bp | GPN-star species |
+| v43 | GLM-Experiments-299M | GPN Promoter 6sp | CLM | rand | 6sp | - | 512bp | GPN-star species |
 | v44 | Marin-9.5M | GPN Promoter 6sp | CLM | rand | 6sp | - | 512bp | GPN-star species |
 
 **Legend:**

@@ -3,6 +3,7 @@
 import argparse
 from pathlib import Path
 
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -12,7 +13,7 @@ import pandas as pd
 # =============================================================================
 
 EXPERIMENT_GROUPS = {
-    "Functional DNA models": ["v13", "v41", "v28", "v17"],
+    "Functional DNA models": ["v13", "v17", "v41", "v28"],
     "Functional DNA models (random weights)": ["v14", "v26"],
     "Whole-genome DNA models": ["v33", "v34", "v37"],
     "Text models": ["v30", "v35", "v36"],
@@ -31,19 +32,40 @@ EXPERIMENT_COLORS = {
     "v41": "#ff7f0e",
 }
 
+# Portland palette colors for reference:
+# 0.0: #0C3383 (dark blue), 0.25: #0A88BA (teal), 0.5: #F2D338 (yellow), 
+# 0.75: #F28F38 (orange), 1.0: #D91E1E (red)
+_PORTLAND_COLORS = ["#0C3383", "#0A88BA", "#F2D338", "#F28F38", "#D91E1E"]
+_PORTLAND_CMAP = mcolors.LinearSegmentedColormap.from_list("portland", _PORTLAND_COLORS)
+
+def _portland_color(pos: float) -> str:
+    """Get hex color from Portland palette at position 0-1."""
+    rgba = _PORTLAND_CMAP(pos)
+    return mcolors.rgb2hex(rgba[:3])
+
 TASK_COLORS = {
-    "species": "#1f77b4", "membership": "#ff7f0e", "gc_content": "#2ca02c",
-    "repeat_fraction": "#d62728", "kmer_entropy_3": "#9467bd",
+    # Species: darker blue from Portland (pos ~0.08)
+    "species": _portland_color(0.08),
+    # Sequence composition tasks: yellow-green range from Portland (lighter to darker as k increases)
+    "gc_content": _portland_color(0.56),
+    "kmer_entropy_1": _portland_color(0.60),  # yellow/orange
+    "kmer_entropy_3": _portland_color(0.525), # yellow
+    "kmer_entropy_9": _portland_color(0.425), # yellow/green
+    # Auxiliary tasks from Portland palette
+    "membership": _portland_color(1.0),       # red
+    "repeat_fraction": _portland_color(0.4),  # green
 }
 
 TASK_MARKERS = {
     "species": "o", "membership": "s", "gc_content": "^",
-    "repeat_fraction": "D", "kmer_entropy_3": "P",
+    "repeat_fraction": "D", "kmer_entropy_1": "v", 
+    "kmer_entropy_3": "P", "kmer_entropy_9": "<",
 }
 
 TASK_LABELS = {
-    "species": "Species", "membership": "Membership", "gc_content": "GC Content",
-    "repeat_fraction": "Repeat Fraction", "kmer_entropy_3": "K-mer (k=3)",
+    "species": "Species", "membership": "Train Membership (balanced)", "gc_content": "GC Content",
+    "repeat_fraction": "Repeat Fraction", "kmer_entropy_1": "K-mer (k=1)",
+    "kmer_entropy_3": "K-mer (k=3)", "kmer_entropy_9": "K-mer (k=9)",
 }
 
 METRIC_LABELS = {
@@ -228,7 +250,7 @@ def cmd_visualize_performance_overlay(args: argparse.Namespace) -> None:
     spectral_df = load_spectral_data(target_versions)
     perf_df = load_performance_data(target_versions, targets=target_tasks)
     
-    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    fig, axes = plt.subplots(2, 2, figsize=(10.8, 7.2))
     axes = axes.flatten()
     
     all_handles, all_labels = [], []
@@ -268,7 +290,7 @@ def cmd_visualize_performance_overlay(args: argparse.Namespace) -> None:
         
         # Y-axis 1 (AUPRC) labels only on left column
         if is_left:
-            ax.set_ylabel("AUPRC Score")
+            ax.set_ylabel("AUPRC")
         else:
             ax.tick_params(axis="y", labelleft=False)
         
@@ -312,7 +334,7 @@ def cmd_visualize_performance_overlay(args: argparse.Namespace) -> None:
             all_labels.extend(l1 + l2)
     
     fig.legend(all_handles, all_labels, loc="lower center", ncol=len(all_labels), 
-               bbox_to_anchor=(0.5, -0.02), fontsize=8)
+               bbox_to_anchor=(0.5, -0.035), fontsize=8)
     plt.tight_layout()
     plt.subplots_adjust(hspace=0.25, wspace=0.1)
     
@@ -329,36 +351,216 @@ def cmd_visualize_performance_metrics(args: argparse.Namespace) -> None:
     metrics = ["accuracy", "f1_macro", "roc_auc_macro", "auprc_macro"]
     
     perf_df = load_performance_data(target_versions, target_tasks)
-    n_components_list = sorted(perf_df["n_components"].unique())
+    
+    # Get n_components list per version (x-axis varies per experiment/column)
+    n_components_per_version = {
+        v: sorted(perf_df[perf_df["version"] == v]["n_components"].unique())
+        for v in target_versions
+    }
     
     fig, axes = plt.subplots(len(metrics), len(target_versions), 
-                             figsize=(3.5 * len(target_versions), 2.5 * len(metrics)))
+                             figsize=(3.2 * len(target_versions), 2.0 * len(metrics)))
     
     for row_idx, metric in enumerate(metrics):
         for col_idx, version in enumerate(target_versions):
             ax = axes[row_idx, col_idx]
+            n_components_list = n_components_per_version[version]
+            is_bottom_row = row_idx == len(metrics) - 1
             
             for task in target_tasks:
                 plot_performance_curve(ax, perf_df, version, task, metric, n_components_list,
                                        show_label=(row_idx == 0 and col_idx == 0))
             
-            setup_pc_axis(ax, n_components_list, show_xlabel=(row_idx == len(metrics) - 1))
-            ax.set_ylim(0, 1.05)
+            setup_pc_axis(ax, n_components_list, show_xlabel=is_bottom_row)
+            # ROC AUC ranges from 0.5 (random) to 1, others from 0 to 1
+            if metric == "roc_auc_macro":
+                ax.set_ylim(0.45, 1.02)
+            else:
+                ax.set_ylim(-0.02, 1.02)
             ax.grid(True, alpha=0.3)
             
+            # Only show x-axis tick labels on bottom row
+            if not is_bottom_row:
+                ax.tick_params(axis="x", labelbottom=False)
+            
+            # Only show y-axis tick labels on left-most column
             if col_idx == 0:
                 ax.set_ylabel(METRIC_LABELS[metric], fontsize=9)
+            else:
+                ax.tick_params(axis="y", labelleft=False)
+            
             if row_idx == 0:
                 exp_title = perf_df[perf_df["version"] == version]["title"].iloc[0] if len(perf_df[perf_df["version"] == version]) > 0 else version
-                ax.set_title(f"{version}: {exp_title}", fontsize=9)
-            if row_idx == 0 and col_idx == 0:
-                ax.legend(fontsize=7, loc="lower right")
+                # Break title after "*bp" for readability
+                title_text = f"{version}: {exp_title}"
+                title_text = title_text.replace("bp ", "bp\n", 1)
+                ax.set_title(title_text, fontsize=7)
+    
+    # Legend outside plot area, top right (aligned with top of first row)
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=7, loc="upper left", bbox_to_anchor=(0.925, 0.95))
     
     plt.tight_layout()
-    plt.subplots_adjust(hspace=0.3, wspace=0.2)
+    plt.subplots_adjust(hspace=0.08, wspace=0.05, right=0.92)
     
     csv_cols = ["version", "title", "target", "n_components"] + metrics
     save_figure(fig, get_base_dir() / "results" / "figures" / "performance_metrics", perf_df, csv_cols)
+
+
+def load_spectral_data_all_samples(versions: list[str] | None = None) -> pd.DataFrame:
+    """Load spectral data with ALL sample sizes (not just max)."""
+    path = get_base_dir() / "results" / "datasets" / "spectral_curves.parquet"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing {path}")
+    
+    df = pd.read_parquet(path)
+    if versions:
+        df = df[df["version"].isin(versions)]
+    
+    # Add normalized columns (normalize per version AND per n_samples)
+    version_to_group = {v: g for g, vs in EXPERIMENT_GROUPS.items() for v in vs}
+    df["group"] = df["version"].map(version_to_group)
+    df["eigenvalue_normalized"] = df.groupby(["version", "n_samples"])["eigenvalue"].transform(lambda x: x / x.max())
+    df["log10_eigenvalue"] = np.log10(df["eigenvalue"])
+    df["log10_eigenvalue_normalized"] = np.log10(df["eigenvalue_normalized"])
+    
+    return df
+
+
+def cmd_visualize_plantcad_decomposition(args: argparse.Namespace) -> None:
+    """Visualize PlantCAD decomposition: eigenspectra by sample size + performance overlay."""
+    version = "v13"
+    target_tasks = ["membership", "kmer_entropy_1", "kmer_entropy_3", "kmer_entropy_9", "species"]
+    
+    # Load data - spectral with all sample sizes
+    spectral_df = load_spectral_data_all_samples([version])
+    perf_df = load_performance_data([version], targets=target_tasks)
+    
+    # Get sample sizes and create grey-to-black color palette
+    sample_sizes = sorted(spectral_df["n_samples"].unique())
+    # Grey scale: light grey (visible on white) → black
+    grey_colors = ["#BBBBBB", "#000000"]  # light grey to black
+    grey_cmap = mcolors.LinearSegmentedColormap.from_list("greys", grey_colors)
+    sample_colors = {s: grey_cmap(i / (len(sample_sizes) - 1)) for i, s in enumerate(sample_sizes)}
+    
+    # Get the common x-axis values (PC counts from performance data n_components)
+    n_components_list = sorted(perf_df["n_components"].unique())
+    max_sample_size = max(sample_sizes)
+    
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # =========================================================================
+    # Facet 1: Eigenvalues by PC count (all ranks), colored by sample size
+    # =========================================================================
+    ax1 = axes[0]
+    
+    for n_samples in sample_sizes:
+        sample_df = spectral_df[spectral_df["n_samples"] == n_samples].sort_values("rank")
+        
+        # Plot all eigenvalues - use rank directly on x-axis
+        ax1.plot(
+            sample_df["rank"], sample_df["log10_eigenvalue_normalized"],
+            marker="o", color=sample_colors[n_samples],
+            label=f"n={n_samples:,}",
+            markersize=2, linewidth=1, alpha=0.8,
+        )
+    
+    # Fit log-linear line to largest sample size for ranks 10-100
+    spec_max = spectral_df[spectral_df["n_samples"] == max_sample_size].sort_values("rank")
+    fit_data = spec_max[(spec_max["rank"] >= 10) & (spec_max["rank"] <= 100)]
+    log10_ranks = np.log10(fit_data["rank"])
+    log10_eigenvalues = fit_data["log10_eigenvalue_normalized"]
+    coeffs = np.polyfit(log10_ranks, log10_eigenvalues, 1)  # slope, intercept
+    
+    # Plot best-fit line across whole x-axis range
+    all_ranks = spectral_df["rank"].unique()
+    x_fit = np.array([all_ranks.min(), all_ranks.max()])
+    y_fit = coeffs[0] * np.log10(x_fit) + coeffs[1]
+    ax1.plot(x_fit, y_fit, linestyle="--", color="grey", linewidth=1.5, alpha=0.8,
+             label=f"Fit (ranks 10–100): slope={coeffs[0]:.2f}")
+    
+    ax1.set_xscale("log")
+    ax1.set_xlabel("Eigenvalue Rank")
+    ax1.set_ylabel("log₁₀(Normalized Eigenvalue)")
+    ax1.set_title("Eigenspectrum by Sample Size")
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(title="Sample Size", fontsize=7, loc="lower left")
+    
+    # =========================================================================
+    # Facet 2: AUPRC performance with eigenspectrum overlay (largest sample size)
+    # =========================================================================
+    ax2 = axes[1]
+    
+    # Add subtle grey shaded region for eigenvalue ranks 128-768 (83% of representation space)
+    pos_128 = n_components_list.index(128)
+    pos_768 = n_components_list.index(768)
+    ax2.axvspan(pos_128, pos_768 + 0.5, color="#e0e0e0", alpha=0.5, zorder=0)
+    
+    # Plot AUPRC for each task
+    perf_v = perf_df.sort_values("n_components")
+    for task in target_tasks:
+        task_perf = perf_v[perf_v["target"] == task].sort_values("n_components")
+        if len(task_perf) > 0:
+            x_positions = get_pc_positions(task_perf["n_components"], n_components_list)
+            ax2.plot(
+                x_positions, task_perf["auprc_macro"],
+                marker=TASK_MARKERS.get(task, "o"),
+                color=TASK_COLORS.get(task, "#333333"),
+                label=TASK_LABELS.get(task, task),
+                markersize=5, linewidth=2, alpha=0.9, zorder=2,
+            )
+    
+    ax2.set_ylim(0, 1.05)
+    ax2.set_ylabel("AUPRC Score")
+    
+    # Secondary y-axis for eigenspectrum at largest sample size
+    ax2_twin = ax2.twinx()
+    
+    spec_max = spectral_df[spectral_df["n_samples"] == max_sample_size].sort_values("rank")
+    n_comp_to_pos = {n: i for i, n in enumerate(n_components_list)}
+    
+    spec_positions = []
+    spec_eigenvalues = []
+    for _, row_data in spec_max.iterrows():
+        if row_data["rank"] in n_comp_to_pos:
+            spec_positions.append(n_comp_to_pos[row_data["rank"]])
+            spec_eigenvalues.append(row_data["log10_eigenvalue_normalized"])
+    
+    if spec_positions:
+        ax2_twin.plot(
+            spec_positions, spec_eigenvalues,
+            marker="o", color="black", label=f"Eigenspectrum (n={max_sample_size:,})",
+            markersize=2.5, linewidth=1, alpha=0.5, zorder=1,
+        )
+    
+    ax2_twin.set_ylim(spectral_df["log10_eigenvalue_normalized"].min() * 1.05, 0.05)
+    ax2_twin.set_ylabel("log₁₀(Normalized Eigenvalue)")
+    
+    setup_pc_axis(ax2, n_components_list, show_xlabel=False)
+    ax2.set_xlabel("Eigenvalue Rank", fontsize=9)
+    ax2.grid(True, alpha=0.3, zorder=0)
+    ax2.set_title("AUPRC Performance with Eigenspectrum Overlay")
+    
+    # Combined legend - centered at rank 128 position
+    h1, l1 = ax2.get_legend_handles_labels()
+    h2, l2 = ax2_twin.get_legend_handles_labels()
+    ax2.legend(h1 + h2, l1 + l2, title="Classification Task", fontsize=7, loc="lower center", bbox_to_anchor=(0.73, 0.0))
+    
+    # Annotation for shaded region (outside plot, bottom right)
+    ax2.annotate("Shaded: ranks 128–768 (83% of representation)", 
+                 xy=(1.02, -0.14), xycoords="axes fraction",
+                 fontsize=7, color="#666666", ha="right")
+    
+    # Suptitle
+    exp_title = spectral_df["title"].iloc[0] if len(spectral_df) > 0 else version
+    fig.suptitle(f"{version}: {exp_title}", fontsize=12, y=0.98)
+    
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.88)
+    
+    csv_cols = ["version", "title", "n_samples", "rank", "eigenvalue", 
+                "eigenvalue_normalized", "log10_eigenvalue", "log10_eigenvalue_normalized"]
+    save_figure(fig, get_base_dir() / "results" / "figures" / "plantcad_decomposition", spectral_df, csv_cols)
 
 
 # =============================================================================
@@ -369,6 +571,7 @@ COMMANDS = {
     "visualize_multimodal_eigenspectra": (cmd_visualize_multimodal_eigenspectra, "Visualize eigenspectra across modalities"),
     "visualize_performance_overlay": (cmd_visualize_performance_overlay, "Visualize eigenspectra with F1 performance overlay"),
     "visualize_performance_metrics": (cmd_visualize_performance_metrics, "Visualize performance metrics faceted by metric and experiment"),
+    "visualize_plantcad_decomposition": (cmd_visualize_plantcad_decomposition, "Visualize PlantCAD decomposition with eigenspectra by sample size"),
 }
 
 
