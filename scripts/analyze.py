@@ -417,6 +417,11 @@ def load_spectral_data_all_samples(versions: list[str] | None = None) -> pd.Data
     if versions:
         df = df[df["version"].isin(versions)]
     
+    # Assert uniqueness by (version, n_samples, rank)
+    key_cols = ["version", "n_samples", "rank"]
+    assert df.duplicated(subset=key_cols).sum() == 0, f"Duplicate records found by {key_cols}"
+    assert df["rank"].min() >= 1, f"Rank must be >= 1, got min={df['rank'].min()}"
+    
     # Add normalized columns (normalize per version AND per n_samples)
     version_to_group = {v: g for g, vs in EXPERIMENT_GROUPS.items() for v in vs}
     df["group"] = df["version"].map(version_to_group)
@@ -425,6 +430,109 @@ def load_spectral_data_all_samples(versions: list[str] | None = None) -> pd.Data
     df["log10_eigenvalue_normalized"] = np.log10(df["eigenvalue_normalized"])
     
     return df
+
+
+def cmd_visualize_spectral_convergence(args: argparse.Namespace) -> None:
+    """Visualize spectral convergence metrics across sample sizes for all experiments."""
+    all_versions = [v for vs in EXPERIMENT_GROUPS.values() for v in vs]
+    primary_versions = EXPERIMENT_GROUPS["Functional DNA models"]
+    df = load_spectral_data_all_samples(all_versions)
+    
+    # Compute metrics per (version, n_samples)
+    def compute_metrics(g):
+        eigs = g["eigenvalue"].values
+        nonzero = eigs[eigs > 0]
+        return pd.Series({
+            "max_eigenvalue": eigs.max(),
+            "condition_number": nonzero.max() / nonzero.min() if len(nonzero) > 0 else np.inf,
+            "effective_sample_size": (eigs.sum() ** 2) / (eigs ** 2).sum() if (eigs ** 2).sum() > 0 else 0,
+            "title": g["title"].iloc[0],
+            "group": g["group"].iloc[0],
+        })
+    
+    metrics_df = df.groupby(["version", "n_samples"]).apply(compute_metrics, include_groups=False).reset_index()
+    
+    # Get max n_samples per version for row 2
+    max_samples_df = metrics_df.loc[metrics_df.groupby("version")["n_samples"].idxmax()]
+    
+    # Group colors for row 2
+    group_colors = {
+        "Functional DNA models": "#1f77b4",
+        "Functional DNA models (random weights)": "#ff7f0e", 
+        "Whole-genome DNA models": "#2ca02c",
+        "Text models": "#d62728",
+    }
+    
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+    metric_configs = [
+        ("max_eigenvalue", "Largest Eigenvalue", True),
+        ("condition_number", "Condition Number", True),
+        ("effective_sample_size", "Effective Sample Size", False),
+    ]
+    
+    # Row 1: Convergence curves for primary functional DNA models (n_samples >= 1024)
+    row1_handles, row1_labels = [], []
+    for col, (metric, ylabel, use_log_y) in enumerate(metric_configs):
+        ax = axes[0, col]
+        for version in primary_versions:
+            v_df = metrics_df[(metrics_df["version"] == version) & (metrics_df["n_samples"] >= 1024)].sort_values("n_samples")
+            if len(v_df) == 0:
+                continue
+            line, = ax.plot(
+                v_df["n_samples"], v_df[metric],
+                marker=MARKERS[version], color=EXPERIMENT_COLORS[version],
+                markersize=5, linewidth=1.5, alpha=0.8,
+            )
+            if col == 0:  # Collect handles from first column only
+                row1_handles.append(line)
+                row1_labels.append(f"{version}: {v_df['title'].iloc[0]}")
+        
+        ax.set_xscale("log", base=2)
+        if use_log_y:
+            ax.set_yscale("log")
+        ax.set_xlabel("Sample Size")
+        ax.set_ylabel(ylabel)
+        ax.set_title(ylabel)
+        ax.grid(True, alpha=0.3)
+    
+    # Row 2: Bar charts at max n_samples for all experiments
+    for col, (metric, ylabel, use_log_y) in enumerate(metric_configs):
+        ax = axes[1, col]
+        
+        # Order by group then version
+        ordered_versions = [v for vs in EXPERIMENT_GROUPS.values() for v in vs]
+        bar_data = max_samples_df.set_index("version").loc[ordered_versions].reset_index()
+        
+        x = np.arange(len(bar_data))
+        colors = [group_colors[bar_data.iloc[i]["group"]] for i in range(len(bar_data))]
+        
+        ax.bar(x, bar_data[metric], color=colors, alpha=0.8, edgecolor="black", linewidth=0.5)
+        
+        if use_log_y:
+            ax.set_yscale("log")
+        ax.set_ylabel(ylabel)
+        ax.set_title(f"{ylabel} (at Max Samples)")
+        ax.set_xticks(x)
+        ax.set_xticklabels(bar_data["version"], rotation=45, ha="right", fontsize=8)
+        ax.grid(True, alpha=0.3, axis="y")
+    
+    # Legends: Row 1 between rows, Row 2 at bottom
+    from matplotlib.patches import Patch
+    group_handles = [Patch(facecolor=c, edgecolor="black", label=g) for g, c in group_colors.items()]
+    
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.12, hspace=0.75)
+    
+    # Row 1 legend centered between rows (2x2 layout)
+    leg1 = fig.legend(row1_handles, row1_labels, loc="center", ncol=2, fontsize=7,
+                      bbox_to_anchor=(0.5, 0.54), title="Experiment")
+    # Row 2 legend centered at bottom (2x2 layout)
+    fig.legend(group_handles, group_colors.keys(), loc="lower center", ncol=2, fontsize=7,
+               bbox_to_anchor=(0.5, -0.01), title="Experiment Group")
+    fig.add_artist(leg1)
+    
+    csv_cols = ["version", "title", "group", "n_samples", "max_eigenvalue", "condition_number", "effective_sample_size"]
+    save_figure(fig, get_base_dir() / "results" / "figures" / "spectral_convergence", metrics_df, csv_cols)
 
 
 def cmd_visualize_plantcad_decomposition(args: argparse.Namespace) -> None:
@@ -572,6 +680,7 @@ COMMANDS = {
     "visualize_performance_overlay": (cmd_visualize_performance_overlay, "Visualize eigenspectra with F1 performance overlay"),
     "visualize_performance_metrics": (cmd_visualize_performance_metrics, "Visualize performance metrics faceted by metric and experiment"),
     "visualize_plantcad_decomposition": (cmd_visualize_plantcad_decomposition, "Visualize PlantCAD decomposition with eigenspectra by sample size"),
+    "visualize_spectral_convergence": (cmd_visualize_spectral_convergence, "Visualize spectral convergence metrics by sample size"),
 }
 
 

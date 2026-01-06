@@ -92,6 +92,14 @@ python scripts/decompose.py \
   --source plantcad --n_samples 128 256 512 1024 4096 16384 65536 \
   --output_dir results/sep/v11 \
   --batch_size 32 --seq_len 8192 --split validation --force
+
+# PlantCAD2-S at full context length w/ larger sample sizes
+rm -rf results/sep/v45/!(experiment.json)
+python scripts/decompose.py \
+  --source plantcad --n_samples 1024 4096 16384 65536 262144 \
+  --membership_split validation --membership_n_samples 16384 \
+  --output_dir results/sep/v45 \
+  --batch_size 32 --seq_len 8192 --force
 ```
 
 ### DNA/Plants/Marin
