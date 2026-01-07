@@ -1,6 +1,7 @@
 """Analyze and visualize aggregated experiment results."""
 
 import argparse
+import json
 from pathlib import Path
 
 import matplotlib.colors as mcolors
@@ -121,6 +122,13 @@ def load_performance_data(versions: list[str] | None = None, targets: list[str] 
     if targets:
         df = df[df["target"].isin(targets)]
     return df
+
+
+def get_experiment_title(version: str) -> str:
+    """Load experiment title from experiment.json."""
+    exp_path = get_base_dir() / "results" / "sep" / version / "experiment.json"
+    with open(exp_path) as f:
+        return json.load(f)["title"]
 
 
 # =============================================================================
@@ -671,6 +679,54 @@ def cmd_visualize_plantcad_decomposition(args: argparse.Namespace) -> None:
     save_figure(fig, get_base_dir() / "results" / "figures" / "plantcad_decomposition", spectral_df, csv_cols)
 
 
+def cmd_visualize_select_eigenspectra(args: argparse.Namespace) -> None:
+    """Visualize eigenspectra for select experiments (v13 PlantCAD, v40 GLM animal promoter)."""
+    versions = ["v13", "v40"]
+    df = load_spectral_data(versions)
+    
+    colors = {"v13": "#1f77b4", "v40": "#2ca02c"}
+    vlines = {"v13": [128, 650], "v40": [580, 790, 950]}
+    
+    def add_vlines(ax, ranks, color="gray", stagger_y=False):
+        for i, rank in enumerate(ranks):
+            ax.axvline(rank, color=color, linestyle="--", linewidth=1, alpha=0.7)
+            y_offset = -2 - (i * 12 if stagger_y else 0)
+            ax.annotate(f"~{rank}", xy=(rank, ax.get_ylim()[1]), xytext=(2, y_offset),
+                        textcoords="offset points", fontsize=9, va="top", ha="left", color=color)
+    
+    fig, axes = plt.subplots(2, 2, figsize=(12, 6))
+    
+    for col, version in enumerate(versions):
+        subset = df[df["version"] == version].sort_values("rank")
+        n_samples = subset["n_samples"].iloc[0]
+        title = get_experiment_title(version)
+        
+        # Top row: linear x-axis
+        ax_top = axes[0, col]
+        ax_top.plot(subset["rank"], subset["eigenvalue"], color=colors[version], linewidth=1.5)
+        ax_top.set_xlabel("Eigenvalue Rank", fontsize=11)
+        ax_top.set_ylabel("Eigenvalue", fontsize=11)
+        ax_top.set_yscale("log")
+        ax_top.set_title(f"{version}: {title}\n(n={n_samples:,})", fontsize=11)
+        ax_top.grid(True, alpha=0.3)
+        add_vlines(ax_top, vlines[version])
+        
+        # Bottom row: log x-axis
+        ax_bot = axes[1, col]
+        ax_bot.plot(subset["rank"], subset["eigenvalue"], color=colors[version], linewidth=1.5)
+        ax_bot.set_xlabel("Eigenvalue Rank (log₁₀)", fontsize=11)
+        ax_bot.set_ylabel("Eigenvalue", fontsize=11)
+        ax_bot.set_xscale("log")
+        ax_bot.set_yscale("log")
+        ax_bot.grid(True, alpha=0.3)
+        # Stagger annotations for v40 to avoid overlap
+        add_vlines(ax_bot, vlines[version], stagger_y=(version == "v40"))
+    
+    plt.tight_layout()
+    csv_cols = ["version", "rank", "eigenvalue", "n_samples"]
+    save_figure(fig, get_base_dir() / "results" / "figures" / "select_eigenspectra", df, csv_cols)
+
+
 # =============================================================================
 # Main Entry Point
 # =============================================================================
@@ -681,6 +737,7 @@ COMMANDS = {
     "visualize_performance_metrics": (cmd_visualize_performance_metrics, "Visualize performance metrics faceted by metric and experiment"),
     "visualize_plantcad_decomposition": (cmd_visualize_plantcad_decomposition, "Visualize PlantCAD decomposition with eigenspectra by sample size"),
     "visualize_spectral_convergence": (cmd_visualize_spectral_convergence, "Visualize spectral convergence metrics by sample size"),
+    "visualize_select_eigenspectra": (cmd_visualize_select_eigenspectra, "Visualize eigenspectra for select experiments (v13, v40)"),
 }
 
 
