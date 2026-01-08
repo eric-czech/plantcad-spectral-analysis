@@ -1,0 +1,34 @@
+{
+  "version": "v46",
+  "title": "Marin IsoFLOP-45M 4096bp Metagenomes",
+  "description": "IsoFLOP model with large compute budget (2.0e17) applied to metagenome data from opengenome2",
+  "experiment_group": "marin_poc",
+
+  "analysis__method": "model_activation_pca",
+  "analysis__context_length": 4096,
+  "analysis__pooling_method": "mean",
+  "analysis__sample_sizes": [2048, 4096, 8192, 16384, 65536],
+  "analysis__max_sample_size": 65536,
+  "analysis__max_rank": 640,
+  "analysis__membership_split": "validation",
+
+  "model__name": "plantcad_isoflop_v1.7-A_qwen-F2.0e+17-P45M-T1.2B-E1-caab57",
+  "model__type": "CLM",
+  "model__source": "marin",
+  "model__training_status": "trained",
+  "model__flop_budget": 2.0e17,
+  "model__width_class": "large",
+  "model__simulation_mode": "none",
+
+  "data__modality": "dna",
+  "data__kingdom": null,
+  "data__dataset": "plantcad/opengenome2-metagenomes-plantcad2-c4096",
+  "data__split": "train",
+  "data__species_filter": null,
+  "data__species_filter_value": null,
+
+  "reference__github_issue": "https://github.com/marin-community/marin/issues/2101",
+  "reference__wandb_run": null,
+  "reference__model_hub_path": "plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints"
+}
+

@@ -447,6 +447,25 @@ python scripts/decompose.py \
   --batch_size 1024 --seq_len 512 --force
 ```
 
+### DNA/Microbes
+
+```bash
+rm -rf results/sep/v46/!(experiment.json)
+python scripts/decompose.py \
+  --source marin --n_samples 2048 4096 8192 16384 65536 \
+  --output_dir results/sep/v46 \
+  --model_path plantcad/marin_exp2101__pcv2_isoflop_c4096__checkpoints \
+  --model_subfolder checkpoints/plantcad_isoflop_v1.7-A_qwen-F2.0e+17-P45M-T1.2B-E1-caab57/hf/step-4676 \
+  --dataset_path plantcad/opengenome2-metagenomes-plantcad2-c4096 \
+  --dataset_revision 17fefa48af6ea6c97b683dd0d4b54ebd492eeaef \
+  --text_column text \
+  --dtype bfloat16 --tokenization_mode strict \
+  --membership_split validation --membership_n_samples 1000 \
+  --split train \
+  --batch_size 64 --seq_len 4096 --force
+
+```
+
 ### Text
 
 Experiments on [Salesforce/wikitext](https://huggingface.co/datasets/Salesforce/wikitext) and [HuggingFaceTB/dclm-edu](https://huggingface.co/datasets/HuggingFaceTB/dclm-edu).

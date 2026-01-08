@@ -680,12 +680,12 @@ def cmd_visualize_plantcad_decomposition(args: argparse.Namespace) -> None:
 
 
 def cmd_visualize_select_eigenspectra(args: argparse.Namespace) -> None:
-    """Visualize eigenspectra for select experiments (v13 PlantCAD, v40 GLM animal promoter)."""
-    versions = ["v13", "v40"]
+    """Visualize eigenspectra for select experiments (v13 PlantCAD plants, v40 GLM animal promoter, v46 Marin metagenomes)."""
+    versions = ["v13", "v40", "v46"]
     df = load_spectral_data(versions)
     
-    colors = {"v13": "#1f77b4", "v40": "#2ca02c"}
-    vlines = {"v13": [128, 650], "v40": [580, 790, 950]}
+    colors = {"v13": "#1f77b4", "v40": "#2ca02c", "v46": "#d62728"}
+    vlines = {"v13": [128, 650], "v40": [580, 790, 950], "v46": [410, 450, 580]}
     
     def add_vlines(ax, ranks, color="gray", stagger_y=False):
         for i, rank in enumerate(ranks):
@@ -694,7 +694,7 @@ def cmd_visualize_select_eigenspectra(args: argparse.Namespace) -> None:
             ax.annotate(f"~{rank}", xy=(rank, ax.get_ylim()[1]), xytext=(2, y_offset),
                         textcoords="offset points", fontsize=9, va="top", ha="left", color=color)
     
-    fig, axes = plt.subplots(2, 2, figsize=(12, 6))
+    fig, axes = plt.subplots(2, 3, figsize=(18, 6))
     
     for col, version in enumerate(versions):
         subset = df[df["version"] == version].sort_values("rank")
@@ -719,8 +719,8 @@ def cmd_visualize_select_eigenspectra(args: argparse.Namespace) -> None:
         ax_bot.set_xscale("log")
         ax_bot.set_yscale("log")
         ax_bot.grid(True, alpha=0.3)
-        # Stagger annotations for v40 to avoid overlap
-        add_vlines(ax_bot, vlines[version], stagger_y=(version == "v40"))
+        # Stagger annotations for v40 and v46 to avoid overlap
+        add_vlines(ax_bot, vlines[version], stagger_y=(version in ["v40", "v46"]))
     
     plt.tight_layout()
     csv_cols = ["version", "rank", "eigenvalue", "n_samples"]
@@ -737,7 +737,7 @@ COMMANDS = {
     "visualize_performance_metrics": (cmd_visualize_performance_metrics, "Visualize performance metrics faceted by metric and experiment"),
     "visualize_plantcad_decomposition": (cmd_visualize_plantcad_decomposition, "Visualize PlantCAD decomposition with eigenspectra by sample size"),
     "visualize_spectral_convergence": (cmd_visualize_spectral_convergence, "Visualize spectral convergence metrics by sample size"),
-    "visualize_select_eigenspectra": (cmd_visualize_select_eigenspectra, "Visualize eigenspectra for select experiments (v13, v40)"),
+    "visualize_select_eigenspectra": (cmd_visualize_select_eigenspectra, "Visualize eigenspectra for select experiments (v13, v40, v46)"),
 }
 
 

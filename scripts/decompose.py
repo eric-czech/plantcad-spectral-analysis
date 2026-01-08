@@ -981,6 +981,8 @@ def load_raw_data(
             print(f"  Shuffling dataset with seed={args.seed}...")
             dataset = dataset.shuffle(seed=args.seed)
     
+    if args.text_column not in dataset.column_names:
+        raise ValueError(f"Text column {args.text_column!r} not found in dataset. Available columns: {dataset.column_names}")
     print(f"Dataset size: {len(dataset):,} records")
     
     # Filter by species if requested

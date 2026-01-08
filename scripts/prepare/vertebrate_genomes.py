@@ -1,29 +1,26 @@
 """
-Script to create a subset of the OpenGenome2 dataset for PlantCAD2 spectral analysis.
+Script to create a subset of the Vertebrate Genomes dataset for PlantCAD2 spectral analysis.
 
 This script:
-1. Streams records from train, validation and test splits of arcinstitute/opengenome2
+1. Streams records from train, validation and test splits of emarro/vertebrate_genomes
 2. Shuffles with a buffer size of 10000
-3. Filters sequences to at least CONTEXT_LENGTH bp
-4. Truncates sequences to exactly CONTEXT_LENGTH bp
-5. Gathers samples to match plantcad/Angiosperm_65_genomes_8192bp split sizes
-6. Uploads to plantcad/opengenome2-plantcad2-c{CONTEXT_LENGTH}
+3. Truncates sequences to exactly CONTEXT_LENGTH bp (all source sequences are 12kbp)
+4. Gathers samples to match plantcad/Angiosperm_65_genomes_8192bp split sizes
+5. Uploads to plantcad/vertebrate-genomes-plantcad2-c{CONTEXT_LENGTH}
 """
 
 import argparse
 from datasets import Dataset, DatasetDict, load_dataset
 from tqdm import tqdm
-from huggingface_hub import HfApi, hf_hub_url
+from huggingface_hub import HfApi
 
 
 # Target sample sizes matching plantcad/Angiosperm_65_genomes_8192bp;
 # counts taken from https://github.com/plantcad/plantcad-dev/issues/39
 TARGET_COUNTS = {
     "train": 2_638_656,
-    # There are only 1000 records in the validation and test splits
-    # as opposed to 329,832 in the PlantCAD2 data
-    "validation": 1000,
-    "test": 1000,
+    "validation": 329_832,
+    "test": 329_832,
 }
 
 # Default parameters
@@ -31,16 +28,9 @@ CONTEXT_LENGTH = 4096
 SHUFFLE_BUFFER_SIZE = 10000
 
 # Source and destination dataset paths
-SOURCE_DATASET = "arcinstitute/opengenome2"
-SOURCE_SUBFOLDER = "json/pretraining_or_both_phases/metagenomes"
-DEST_DATASET = "plantcad/opengenome2-metagenomes-plantcad2-c4096"
-
-# Mapping from our split names to the file naming convention in opengenome2
-SPLIT_TO_FILE_PREFIX = {
-    "train": "data_metagenomics_train_",
-    "validation": "data_metagenomics_valid_",
-    "test": "data_metagenomics_test_",
-}
+SOURCE_DATASET = "emarro/vertebrate_genomes"
+SOURCE_REVISION = "9703952e2c90c822ea8a96c9638b584ccaf36d4e"
+DEST_DATASET = "plantcad/vertebrate-genomes-plantcad2-c4096"
 
 # README content
 README_CONTENT = f"""---
@@ -50,7 +40,7 @@ tags:
 - DNA
 - genomics
 - genetics
-- metagenomics
+- vertebrates
 dataset_info:
   features:
   - name: text
@@ -59,36 +49,36 @@ dataset_info:
   - name: train
     num_examples: 2638656
   - name: validation
-    num_examples: 1000
+    num_examples: 329832
   - name: test
-    num_examples: 1000
+    num_examples: 329832
 ---
 
-# OpenGenome2 Metagenomes PlantCAD2 Subset ({CONTEXT_LENGTH}bp)
+# Vertebrate Genomes PlantCAD2 Subset ({CONTEXT_LENGTH}bp)
 
-This dataset is a curated subset of [arcinstitute/opengenome2](https://huggingface.co/datasets/arcinstitute/opengenome2) 
+This dataset is a curated subset of [emarro/vertebrate_genomes](https://huggingface.co/datasets/emarro/vertebrate_genomes) 
 designed for comparative spectral analysis with plant genomic data.
 
 ## Dataset Description
 
-Sequences were randomly sampled from OpenGenome2, filtered and truncated to match the sample sizes 
-per split of the [plantcad/Angiosperm_65_genomes_8192bp](https://huggingface.co/datasets/plantcad/Angiosperm_65_genomes_8192bp) dataset.
+Sequences were randomly sampled from Vertebrate Genomes (revision {SOURCE_REVISION}), 
+truncated to match the sample sizes per split of the 
+[plantcad/Angiosperm_65_genomes_8192bp](https://huggingface.co/datasets/plantcad/Angiosperm_65_genomes_8192bp) dataset.
 
 ### Processing Steps
 
-1. **Streaming**: Records were streamed from the metagenomes subfolder (`json/pretraining_or_both_phases/metagenomes`) of OpenGenome2
+1. **Streaming**: Records were streamed from the standard train/validation/test splits
 2. **Shuffling**: Applied shuffle with buffer size of 10,000 for random sampling
-3. **Filtering**: Sequences shorter than {CONTEXT_LENGTH}bp were excluded
-4. **Truncation**: Sequences ≥{CONTEXT_LENGTH}bp were truncated to exactly {CONTEXT_LENGTH}bp
-5. **Sampling**: Collected samples to match PlantCAD split sizes
+3. **Truncation**: All sequences (originally 12kbp) were truncated to exactly {CONTEXT_LENGTH}bp
+4. **Sampling**: Collected samples to match PlantCAD split sizes
 
 ### Split Sizes
 
 | Split | Number of Examples |
 |-------|-------------------|
 | train | 2,638,656 |
-| validation | 1000 |
-| test | 1000 |
+| validation | 329,832 |
+| test | 329,832 |
 
 ### Sequence Length
 
@@ -96,41 +86,26 @@ All sequences are exactly **{CONTEXT_LENGTH} base pairs**.
 
 ## Source Dataset
 
-OpenGenome2 is a database of nearly 9 trillion base pairs of curated DNA from across all domains of life,
-used to train Evo 2 models. Please refer to the [Evo 2 preprint](https://www.biorxiv.org/content/early/2025/02/21/2025.02.18.638918) 
-for further details.
+Vertebrate Genomes contains DNA sequences from vertebrate species, with all sequences being 12,000 base pairs in length.
+This subset uses revision `{SOURCE_REVISION}`.
 
 ## Usage
 
 ```python
 from datasets import load_dataset
 
-dataset = load_dataset("plantcad/opengenome2-metagenomes-plantcad2-c{CONTEXT_LENGTH}")
-```
-
-## Citation
-
-If you use this dataset, please cite the original OpenGenome2:
-
-```bibtex
-@article{{Brixi2025.02.18.638918,
-    author = {{Brixi, Garyk and Durrant, Matthew G and Ku, Jerome and others}},
-    title = {{Genome modeling and design across all domains of life with Evo 2}},
-    year = {{2025}},
-    doi = {{10.1101/2025.02.18.638918}},
-    journal = {{bioRxiv}}
-}}
+dataset = load_dataset("plantcad/vertebrate-genomes-plantcad2-c{CONTEXT_LENGTH}")
 ```
 
 ## License
 
-Apache 2.0 (inherited from OpenGenome2)
+Apache 2.0
 """
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Create OpenGenome2 subset for PlantCAD2 spectral analysis"
+        description="Create Vertebrate Genomes subset for PlantCAD2 spectral analysis"
     )
     parser.add_argument(
         "--dry_run",
@@ -172,37 +147,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def get_split_files(split_name: str) -> list[str]:
-    """
-    Get the list of JSONL.gz files for a given split from the OpenGenome2 repository.
-    
-    Args:
-        split_name: Name of the split (train, validation, test)
-        
-    Returns:
-        List of file paths within the repository
-    """
-    api = HfApi()
-    
-    # List all files in the metagenomes subfolder
-    files = api.list_repo_files(
-        repo_id=SOURCE_DATASET,
-        repo_type="dataset",
-    )
-    
-    # Filter to the subfolder and matching split prefix
-    prefix = SPLIT_TO_FILE_PREFIX[split_name]
-    matching_files = [
-        f for f in files
-        if f.startswith(SOURCE_SUBFOLDER) and prefix in f and f.endswith(".jsonl.gz")
-    ]
-    
-    return sorted(matching_files)
-
-
 def process_split(split_name: str, target_count: int, shuffle_buffer_size: int, seed: int) -> Dataset:
     """
-    Process a single split from OpenGenome2.
+    Process a single split from Vertebrate Genomes.
     
     Args:
         split_name: Name of the split (train, validation, test)
@@ -215,24 +162,11 @@ def process_split(split_name: str, target_count: int, shuffle_buffer_size: int, 
     """
     print(f"\nProcessing {split_name} split (target: {target_count:,} samples)...")
     
-    # Get the list of files for this split
-    split_files = get_split_files(split_name)
-    print(f"  Found {len(split_files)} files for {split_name} split")
-    
-    if not split_files:
-        raise ValueError(f"No files found for split '{split_name}' in {SOURCE_SUBFOLDER}")
-    
-    # Build URLs for the files
-    data_files = [
-        hf_hub_url(repo_id=SOURCE_DATASET, filename=f, repo_type="dataset")
-        for f in split_files
-    ]
-    
-    # Load dataset in streaming mode from specific files
+    # Load dataset in streaming mode with specific revision
     ds = load_dataset(
-        "json",
-        data_files=data_files,
-        split="train",  # load_dataset always uses "train" for data_files
+        SOURCE_DATASET,
+        split=split_name,
+        revision=SOURCE_REVISION,
         streaming=True,
     )
     
@@ -242,21 +176,17 @@ def process_split(split_name: str, target_count: int, shuffle_buffer_size: int, 
     # Collect sequences
     sequences = []
     processed = 0
-    skipped_short = 0
     
     pbar = tqdm(total=target_count, desc=f"Collecting {split_name}")
     
     for example in ds:
         processed += 1
-        text = example.get("text", "")
+        text = example["sequence"]
         
-        # Skip sequences shorter than minimum length
-        if len(text) < CONTEXT_LENGTH:
-            skipped_short += 1
-            continue
-        
-        # Truncate to target length
+        # Truncate to target length (all source sequences are 12kbp)
         truncated_seq = text[:CONTEXT_LENGTH]
+        if len(truncated_seq) != CONTEXT_LENGTH:
+            raise ValueError(f"Truncated sequence length mismatch: {len(truncated_seq)} != {CONTEXT_LENGTH}")
         sequences.append(truncated_seq)
         pbar.update(1)
         
@@ -267,7 +197,6 @@ def process_split(split_name: str, target_count: int, shuffle_buffer_size: int, 
     pbar.close()
     
     print(f"  Processed: {processed:,} records")
-    print(f"  Skipped (too short): {skipped_short:,} records")
     print(f"  Collected: {len(sequences):,} sequences")
     
     if len(sequences) < target_count:
@@ -281,9 +210,10 @@ def main():
     args = parse_args()
     
     print("=" * 60)
-    print("OpenGenome2 PlantCAD2 Subset Creator")
+    print("Vertebrate Genomes PlantCAD2 Subset Creator")
     print("=" * 60)
     print(f"Source: {SOURCE_DATASET}")
+    print(f"Revision: {SOURCE_REVISION}")
     print(f"Destination: {args.output_dataset}")
     print(f"Shuffle buffer size: {args.shuffle_buffer_size:,}")
     print(f"Context length: {CONTEXT_LENGTH:,}bp")
