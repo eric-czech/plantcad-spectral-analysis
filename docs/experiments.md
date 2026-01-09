@@ -678,6 +678,30 @@ python scripts/pretrain.py \
 hf upload plantcad/marin_exp2101__pcv2_pretrain_c4096__checkpoints /work/10459/eczech/vista/analysis/pcad_eigenspectrum/checkpoints/wikitext_pretrain_c4096_v0.1 checkpoints/wikitext_pretrain_c4096_v0.1 --repo-type model
 ```
 
+## Data Preparation
+
+```bash
+# Qwen2-0.5B run
+python scripts/prepare/synthetic_genomes.py \
+  --output_dir /scratch/10459/eczech/data/dna/synthetic-genomes-plantcad2-c4096-qwen-0.5b \
+  --model Qwen/Qwen2-0.5B \
+  --batch_size 128 \
+  --dry_run --test 
+
+idev -p gh-dev -N 8 -n 8 -t 2:00:00 
+ibrun \
+  python scripts/prepare/synthetic_genomes.py generate \
+  --output_dir /scratch/10459/eczech/data/dna/synthetic-genomes-plantcad2-c4096-qwen-0.5b \
+  --model Qwen/Qwen2-0.5B --batch_size 128
+
+# Qwen2-1.5B run
+python scripts/prepare/synthetic_genomes.py \
+  --output_dir /scratch/10459/eczech/data/dna/synthetic-genomes-plantcad2-c4096-qwen-1.5b \
+  --model Qwen/Qwen2-1.5B \
+  --batch_size 64 \
+  --dry_run --test 
+```
+
 ## SLURM Job Submission
 
 ```bash
